@@ -1,5 +1,4 @@
 ### 1. Cloner le dépôt
-```markdown
 
 ```bash
 git clone https://github.com/RockDago/orientation-scolaire-pro.git
@@ -37,5 +36,12 @@ npm run dev
 - **`npm run build`** – Compile le projet pour la production.
 - **`npm run preview`** – Lance un serveur local pour prévisualiser le build de production.
 
+```bash
+npm run build
+```
+et 
+```bash
+npm run dev
+```
 ```
 
