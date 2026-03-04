@@ -3,13 +3,14 @@ import {
   FaUser, FaEnvelope, FaUserTag, FaClock, FaCheckCircle, 
   FaEdit, FaPhone, FaCamera, FaMapMarkerAlt, FaShieldAlt,
   FaEye, FaEyeSlash, FaCheck, FaLock, FaSave, FaTimes,
-  FaArrowLeft, FaArrowRight
+  FaArrowLeft, FaArrowRight, FaUserCircle
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ProfileView = () => {
   const userData = {
+    username: "madara_uchiha", // Ajout du username
     prenom: "Madara",
     nom: "Uchiha",
     email: "admin@orientation.local",
@@ -125,6 +126,12 @@ const ProfileView = () => {
                 </h1>
               </div>
               
+              {/* Ajout du username sous le nom */}
+              <div className="flex items-center gap-1.5 mb-2">
+                <FaUserCircle className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-sm text-gray-600">@{userData.username}</span>
+              </div>
+              
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 bg-green-500 rounded-full inline-block shadow-sm shadow-green-500/20" />
                 <span className="text-xs text-gray-500">En ligne</span>
@@ -186,6 +193,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
   const [editInfo, setEditInfo] = useState(false);
   const [editContact, setEditContact] = useState(false);
   const [formData, setFormData] = useState({
+    username: userData.username || "", // Ajout du username
     nom: userData.nom || "",
     prenom: userData.prenom || "",
     email: userData.email || "",
@@ -203,6 +211,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
 
   const validateInfoForm = () => {
     const newErrors = {};
+    if (!formData.username?.trim()) newErrors.username = "Requis"; // Validation username
     if (!formData.nom.trim()) newErrors.nom = "Requis";
     if (!formData.prenom.trim()) newErrors.prenom = "Requis";
     setErrors(newErrors);
@@ -255,6 +264,14 @@ const PersonalInfoForm = ({ userData, showToast }) => {
 
           {!editInfo ? (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4">
+              {/* Ajout de la ligne username */}
+              <div className="mb-2">
+                <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Nom d'utilisateur</label>
+                <span className="text-sm text-gray-700 font-medium flex items-center gap-1">
+                  <FaUserCircle className="text-gray-400" size={12} />
+                  {userData.username || "—"}
+                </span>
+              </div>
               <div className="mb-2">
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Nom</label>
                 <span className="text-sm text-gray-700 font-medium">{userData.nom || "—"}</span>
@@ -275,6 +292,26 @@ const PersonalInfoForm = ({ userData, showToast }) => {
           ) : (
             <div>
               <div className="grid grid-cols-2 gap-4 mb-4">
+                {/* Ajout du champ username dans le formulaire d'édition */}
+                <div className="mb-3.5">
+                  <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Nom d'utilisateur *</label>
+                  <div className="relative">
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                      <FaUserCircle size={14} />
+                    </div>
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      className={`w-full p-2.5 pl-8 bg-white border rounded-lg text-sm text-gray-900 font-sans transition-all duration-200 box-border ${
+                        errors.username ? 'border-red-500' : 'border-gray-200'
+                      }`}
+                      placeholder="nom_utilisateur"
+                    />
+                  </div>
+                  {errors.username && <div className="text-[11px] text-red-500 mt-1">{errors.username}</div>}
+                </div>
                 <div className="mb-3.5">
                   <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Nom *</label>
                   <input
