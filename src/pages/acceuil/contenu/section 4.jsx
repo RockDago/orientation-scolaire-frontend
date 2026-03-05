@@ -511,25 +511,25 @@ export default function Section4({ metier, selectedRegion, onRetour }) {
       </div>
 
       {/* ══════════════════════════════════════════
-          Colonne droite — Panneau info (Desktop)
+          Colonne droite — Panneau info glassmorphism (comme section 3)
       ══════════════════════════════════════════ */}
       <div className="hidden lg:flex relative z-10 flex-1 flex-col items-center justify-center px-10 xl:px-14 py-12 h-full">
         <div
           className="w-full max-w-sm rounded-3xl p-8 text-center"
           style={{
-            background: "rgba(8, 20, 60, 0.55)",
-            backdropFilter: "blur(28px)",
-            WebkitBackdropFilter: "blur(28px)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            boxShadow: "0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)",
+            background: "rgba(255, 255, 255, 0.12)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: "1px solid rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
           }}
         >
           {/* Icône */}
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
             style={{
-              background: "rgba(255,255,255,0.12)",
-              border: "1px solid rgba(255,255,255,0.22)",
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.25)",
               backdropFilter: "blur(10px)",
             }}
           >

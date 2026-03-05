@@ -3,6 +3,8 @@ import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome, HiOutlineSearch, HiX, HiChevronDown, HiCheck, HiChevronUp } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
+// Déplacer les constantes dans un fichier séparé ou les garder ici
+// Mais pour corriger l'erreur Fast Refresh, on peut les garder car ce sont des constantes
 export const METIERS_LIST = [
   { id: "architecte",      label: "Architecte",                         mention: "Architecture & Urbanisme",   niveau: "Bac + 5", description: "Conçoit et supervise la construction de bâtiments et d'espaces urbains fonctionnels et esthétiques.", parcours: ["Architecture", "Génie civil", "Design urbain", "BTP"], profil: ["Série C", "Série D", "Série technique"] },
   { id: "avocat",          label: "Avocat / Juriste",                   mention: "Droit",                      niveau: "Bac + 5", description: "Défend les intérêts de ses clients devant les juridictions et conseille sur les questions juridiques.", parcours: ["Droit privé", "Droit public", "Droit des affaires", "Criminologie"], profil: ["Série A", "Série B"] },
@@ -36,7 +38,7 @@ function MetierDetailsCard({ metier, onClose, useAzureBg = false }) {
 
   const bgClass = useAzureBg
     ? "bg-[#155faa]"
-    : "bg-slate-950/35 backdrop-blur-2xl border border-white/20";
+    : "bg-white/10 backdrop-blur-2xl border border-white/25";
 
   return (
     <div className={`relative rounded-2xl p-5 h-full flex flex-col ${bgClass}`}>
@@ -94,6 +96,7 @@ function MetierDetailsCard({ metier, onClose, useAzureBg = false }) {
 function MetierExpandCard({ metier, onSelect }) {
   const [open, setOpen] = useState(false);
   const cardRef = useRef(null);
+  // eslint-disable-next-line no-unused-vars
   const [openUpward, setOpenUpward] = useState(false);
 
   const handleToggle = () => {
@@ -106,7 +109,10 @@ function MetierExpandCard({ metier, onSelect }) {
   };
 
   return (
-    <div ref={cardRef} className="bg-slate-950/25 backdrop-blur-2xl border border-white/20 rounded-2xl overflow-hidden transition-all">
+    <div 
+      ref={cardRef} 
+      className="bg-white/10 backdrop-blur-xl border border-white/25 rounded-2xl overflow-hidden transition-all hover:bg-white/15"
+    >
       {/* En-tête cliquable */}
       <button
         className="w-full flex items-start justify-between gap-3 p-4 text-left"
@@ -115,10 +121,10 @@ function MetierExpandCard({ metier, onSelect }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <span className="text-white font-bold text-base leading-snug">{metier.label}</span>
-            <span className="text-white/90 text-[10px] font-bold bg-[#1a3ea8] px-2 py-0.5 rounded-full shrink-0">{metier.niveau}</span>
+            <span className="text-white/90 text-[10px] font-bold bg-[#1a3ea8]/80 backdrop-blur-sm px-2 py-0.5 rounded-full shrink-0">{metier.niveau}</span>
           </div>
-          <p className={`text-white/70 text-xs leading-relaxed ${open ? "" : "line-clamp-1"}`}>{metier.description}</p>
-          <p className="text-white/45 text-[10px] uppercase font-bold tracking-wider mt-1">{metier.mention}</p>
+          <p className={`text-white/80 text-xs leading-relaxed ${open ? "" : "line-clamp-1"}`}>{metier.description}</p>
+          <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider mt-1">{metier.mention}</p>
         </div>
         <div className="text-white/70 shrink-0 mt-0.5">
           {open ? <HiChevronUp size={18} /> : <HiChevronDown size={18} />}
@@ -127,13 +133,13 @@ function MetierExpandCard({ metier, onSelect }) {
 
       {/* Détails expandés */}
       {open && (
-        <div className={`px-4 pb-4 border-t border-white/10 pt-3 space-y-3 animate-fadeIn`}>
+        <div className="px-4 pb-4 border-t border-white/15 pt-3 space-y-3 animate-fadeIn">
           {metier.parcours?.length > 0 && (
             <div>
               <p className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-1.5">Parcours d'études</p>
               <div className="flex flex-wrap gap-1.5">
                 {metier.parcours.map((p, i) => (
-                  <span key={i} className="text-[11px] bg-white/10 border border-white/15 px-2.5 py-1 rounded-full text-white/90">{p}</span>
+                  <span key={i} className="text-[11px] bg-white/15 border border-white/20 px-2.5 py-1 rounded-full text-white/90">{p}</span>
                 ))}
               </div>
             </div>
@@ -143,7 +149,7 @@ function MetierExpandCard({ metier, onSelect }) {
               <p className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-1.5">Séries recommandées</p>
               <div className="flex flex-wrap gap-1.5">
                 {metier.profil.map((p, i) => (
-                  <span key={i} className="text-[11px] bg-white/15 border border-white/20 text-white/90 px-2.5 py-1 rounded-full">{p}</span>
+                  <span key={i} className="text-[11px] bg-white/20 border border-white/25 text-white/90 px-2.5 py-1 rounded-full">{p}</span>
                 ))}
               </div>
             </div>
@@ -171,8 +177,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour }) {
   const [comboSearch, setComboSearch]     = useState("");
   const [mode, setMode]                   = useState("idle");
   const [modalSelected, setModalSelected] = useState(null);
+  const [comboPosition, setComboPosition] = useState("bottom");
 
   const comboRef = useRef(null);
+  const comboButtonRef = useRef(null);
 
   const filteredMetiers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -223,10 +231,30 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour }) {
     }
   };
 
-  useEffect(() => {
-    if (!isModalOpen) return;
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
     setModalSelected(localSelected || filteredMetiers[0] || null);
-  }, [isModalOpen]); // eslint-disable-line
+  };
+
+  // Fonction pour calculer la position du combo sans utiliser useEffect
+  const getComboPosition = () => {
+    if (comboButtonRef.current) {
+      const rect = comboButtonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      return spaceBelow < 300 ? "top" : "bottom";
+    }
+    return "bottom";
+  };
+
+  // Ouvrir le combo et définir la position directement
+  const handleToggleCombo = () => {
+    if (!isComboOpen) {
+      // Calculer la position avant d'ouvrir
+      const position = getComboPosition();
+      setComboPosition(position);
+    }
+    setIsComboOpen(!isComboOpen);
+  };
 
   // Fermer combobox en cliquant dehors
   useEffect(() => {
@@ -294,7 +322,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour }) {
           <div className="w-full mb-4">
             <button
               className="w-full bg-white border-2 border-gray-100 rounded-2xl px-5 py-3.5 flex items-center justify-between cursor-pointer shadow-lg hover:shadow-xl transition-all"
-              onClick={() => { setIsModalOpen(true); setSearchQuery(""); }}
+              onClick={handleOpenModal}
             >
               <span className={`font-medium text-sm ${localSelected ? "text-[#1250c8] font-bold" : "text-gray-400"} truncate max-w-[80%]`}>
                 {localSelected ? localSelected.label : "Rechercher un métier (Ex : développeur, infirmier…)"}
@@ -324,9 +352,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour }) {
                 <p className="text-[11px] text-white/70 font-bold mb-2 uppercase tracking-widest">Explorer par domaine</p>
 
                 <button
-                  onClick={() => setIsComboOpen(!isComboOpen)}
-                  className={`w-full bg-slate-950/25 backdrop-blur-xl border rounded-xl px-4 py-2.5 flex items-center justify-between transition-all
-                    ${isComboOpen ? "border-white/70 ring-2 ring-white/20" : "border-white/30 hover:border-white/60 hover:bg-slate-950/30"}`}
+                  ref={comboButtonRef}
+                  onClick={handleToggleCombo}
+                  className={`w-full bg-white/10 backdrop-blur-xl border rounded-xl px-4 py-2.5 flex items-center justify-between transition-all
+                    ${isComboOpen ? "border-white/70 ring-2 ring-white/20" : "border-white/30 hover:border-white/60 hover:bg-white/15"}`}
                 >
                   <span className={`text-sm font-semibold ${selectedDomaine ? "text-white" : "text-white/60"}`}>
                     {selectedDomaine ? selectedDomaine.label : "Sélectionner un domaine…"}
@@ -334,9 +363,11 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour }) {
                   <HiChevronDown className={`text-white/80 text-lg transition-transform duration-200 flex-shrink-0 ${isComboOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Dropdown — affiché par dessus tout */}
+                {/* Dropdown — position dynamique (au-dessus ou en dessous) */}
                 {isComboOpen && (
-                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-fadeIn">
+                  <div 
+                    className={`absolute left-0 right-0 ${comboPosition === "top" ? "bottom-full mb-2" : "top-full mt-2"} bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-fadeIn`}
+                  >
                     <div className="p-2 border-b border-gray-100">
                       <div className="relative">
                         <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />

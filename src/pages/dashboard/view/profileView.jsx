@@ -10,11 +10,11 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const ProfileView = () => {
   const userData = {
-    username: "madara_uchiha", // Ajout du username
+    username: "madara_uchiha",
     prenom: "Madara",
     nom: "Uchiha",
     email: "admin@orientation.local",
-    role: "admin",
+    role: "Administrateur", // Changé pour un affichage plus clair
     telephone: "+261 34 12 345 67",
     adresse: "Lot IVT 23 Bis Antanimena",
     code_postal: "101",
@@ -124,9 +124,13 @@ const ProfileView = () => {
                 <h1 className="text-xl font-bold text-gray-900 m-0">
                   {userData.prenom} {userData.nom}
                 </h1>
+                {/* Badge du rôle ajouté ici */}
+                <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium ml-2">
+                  {userData.role}
+                </span>
               </div>
               
-              {/* Ajout du username sous le nom */}
+              {/* Username */}
               <div className="flex items-center gap-1.5 mb-2">
                 <FaUserCircle className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-sm text-gray-600">@{userData.username}</span>
@@ -193,13 +197,14 @@ const PersonalInfoForm = ({ userData, showToast }) => {
   const [editInfo, setEditInfo] = useState(false);
   const [editContact, setEditContact] = useState(false);
   const [formData, setFormData] = useState({
-    username: userData.username || "", // Ajout du username
+    username: userData.username || "",
     nom: userData.nom || "",
     prenom: userData.prenom || "",
     email: userData.email || "",
     telephone: userData.telephone || "",
     code_postal: userData.code_postal || "",
-    adresse: userData.adresse || ""
+    adresse: userData.adresse || "",
+    role: userData.role || "" // Ajout du rôle
   });
   const [errors, setErrors] = useState({});
 
@@ -211,7 +216,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
 
   const validateInfoForm = () => {
     const newErrors = {};
-    if (!formData.username?.trim()) newErrors.username = "Requis"; // Validation username
+    if (!formData.username?.trim()) newErrors.username = "Requis";
     if (!formData.nom.trim()) newErrors.nom = "Requis";
     if (!formData.prenom.trim()) newErrors.prenom = "Requis";
     setErrors(newErrors);
@@ -263,37 +268,44 @@ const PersonalInfoForm = ({ userData, showToast }) => {
           </div>
 
           {!editInfo ? (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4">
-              {/* Ajout de la ligne username */}
-              <div className="mb-2">
+            // Mode affichage - 2 colonnes
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Nom d'utilisateur</label>
                 <span className="text-sm text-gray-700 font-medium flex items-center gap-1">
                   <FaUserCircle className="text-gray-400" size={12} />
                   {userData.username || "—"}
                 </span>
               </div>
-              <div className="mb-2">
+              <div>
+                <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Rôle</label>
+                <span className="text-sm text-gray-700 font-medium flex items-center gap-1">
+                  <FaUserTag className="text-gray-400" size={12} />
+                  {userData.role || "—"}
+                </span>
+              </div>
+              <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Nom</label>
                 <span className="text-sm text-gray-700 font-medium">{userData.nom || "—"}</span>
               </div>
-              <div className="mb-2">
+              <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Prénom</label>
                 <span className="text-sm text-gray-700 font-medium">{userData.prenom || "—"}</span>
               </div>
-              <div className="mb-2">
+              <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Adresse</label>
                 <span className="text-sm text-gray-700 font-medium">{userData.adresse || "—"}</span>
               </div>
-              <div className="mb-2">
+              <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">Code postal</label>
                 <span className="text-sm text-gray-700 font-medium">{userData.code_postal || "—"}</span>
               </div>
             </div>
           ) : (
+            // Mode édition - 2 colonnes
             <div>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                {/* Ajout du champ username dans le formulaire d'édition */}
-                <div className="mb-3.5">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-4">
+                <div>
                   <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Nom d'utilisateur *</label>
                   <div className="relative">
                     <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -312,7 +324,25 @@ const PersonalInfoForm = ({ userData, showToast }) => {
                   </div>
                   {errors.username && <div className="text-[11px] text-red-500 mt-1">{errors.username}</div>}
                 </div>
-                <div className="mb-3.5">
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Rôle</label>
+                  <div className="relative">
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                      <FaUserTag size={14} />
+                    </div>
+                    <input
+                      type="text"
+                      name="role"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 pl-8 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-700 font-sans transition-all duration-200 box-border cursor-not-allowed"
+                      placeholder="Rôle"
+                      disabled
+                    />
+                  </div>
+                  <div className="text-[11px] text-gray-400 mt-1">Non modifiable</div>
+                </div>
+                <div>
                   <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Nom *</label>
                   <input
                     type="text"
@@ -326,7 +356,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
                   />
                   {errors.nom && <div className="text-[11px] text-red-500 mt-1">{errors.nom}</div>}
                 </div>
-                <div className="mb-3.5">
+                <div>
                   <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Prénom *</label>
                   <input
                     type="text"
@@ -340,28 +370,28 @@ const PersonalInfoForm = ({ userData, showToast }) => {
                   />
                   {errors.prenom && <div className="text-[11px] text-red-500 mt-1">{errors.prenom}</div>}
                 </div>
-              </div>
-              <div className="mb-3.5">
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Adresse</label>
-                <input
-                  type="text"
-                  name="adresse"
-                  value={formData.adresse}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 font-sans transition-all duration-200 box-border"
-                  placeholder="123 Rue Exemple, Antananarivo"
-                />
-              </div>
-              <div className="mb-3.5">
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Code postal</label>
-                <input
-                  type="text"
-                  name="code_postal"
-                  value={formData.code_postal}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 font-sans transition-all duration-200 box-border"
-                  placeholder="101"
-                />
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Adresse</label>
+                  <input
+                    type="text"
+                    name="adresse"
+                    value={formData.adresse}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 font-sans transition-all duration-200 box-border"
+                    placeholder="123 Rue Exemple, Antananarivo"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Code postal</label>
+                  <input
+                    type="text"
+                    name="code_postal"
+                    value={formData.code_postal}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 font-sans transition-all duration-200 box-border"
+                    placeholder="101"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -380,7 +410,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
         </div>
       </form>
 
-      {/* Section Contacts */}
+      {/* Section Contacts - reste inchangée */}
       <form onSubmit={handleSubmitContact}>
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
           <div className="flex justify-between items-center mb-4">
@@ -490,7 +520,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
   );
 };
 
-// Composant Sécurité
+// Composant Sécurité - inchangé
 const SecurityForm = ({ userData, showToast }) => {
   const [passwords, setPasswords] = useState({ passwordCurrent: "", passwordNew: "", passwordConfirm: "" });
   const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });

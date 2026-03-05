@@ -23,11 +23,10 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
         {/* Titre + texte - réduction de la taille sur desktop */}
         <div className="w-full max-w-3xl mx-auto text-center md:text-left mt-2 md:mt-4 mb-6 md:mb-8">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight tracking-tight">
-            Trouve le métier<br />qui te correspond
+            Que veux-tu faire<br />aujourd&apos;hui ?
           </h1>
           <p className="text-xs sm:text-sm md:text-base text-slate-500 leading-relaxed max-w-xl mx-auto md:mx-0 mt-3">
-            Cette application aide les élèves et les parents à choisir un métier
-            et le parcours d&apos;études adapté
+            Découvre les métiers et les formations qui te correspondent
           </p>
         </div>
 
