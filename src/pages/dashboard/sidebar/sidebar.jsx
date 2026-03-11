@@ -46,9 +46,21 @@ const Sidebar = ({
     return settingsPaths.some((path) => location.pathname === path);
   };
 
-
   const handleConfirmLogout = () => {
     setShowLogoutModal(false);
+
+    const savedEmail = localStorage.getItem("savedEmail"); 
+    const rememberMe = localStorage.getItem("rememberMe");
+    const visitorId = localStorage.getItem("osp_visitor_id"); 
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    if (savedEmail) localStorage.setItem("savedEmail", savedEmail);
+    if (rememberMe) localStorage.setItem("rememberMe", rememberMe);
+    if (visitorId) localStorage.setItem("osp_visitor_id", visitorId);
+
+
     navigate("/login");
   };
 

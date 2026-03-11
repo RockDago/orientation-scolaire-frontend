@@ -1,47 +1,22 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
-import { HiOutlineHome, HiOutlineSearch, HiX, HiChevronDown, HiCheck, HiChevronUp } from "react-icons/hi";
+import {
+  HiOutlineHome,
+  HiOutlineSearch,
+  HiX,
+  HiChevronDown,
+  HiCheck,
+} from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { getAllMetiersCache }  from "../../../services/metier.services";
+import { getAllMentions }      from "../../../services/mention.services";
+import { searchMetier }        from "../../../services/metier.services";
 
-// Déplacer les constantes dans un fichier séparé ou les garder ici
-// Mais pour corriger l'erreur Fast Refresh, on peut les garder car ce sont des constantes
-export const METIERS_LIST = [
-  { id: "architecte",      label: "Architecte",                         mention: "Architecture & Urbanisme",   niveau: "Bac + 5", description: "Conçoit et supervise la construction de bâtiments et d'espaces urbains fonctionnels et esthétiques.", parcours: ["Architecture", "Génie civil", "Design urbain", "BTP"], profil: ["Série C", "Série D", "Série technique"] },
-  { id: "avocat",          label: "Avocat / Juriste",                   mention: "Droit",                      niveau: "Bac + 5", description: "Défend les intérêts de ses clients devant les juridictions et conseille sur les questions juridiques.", parcours: ["Droit privé", "Droit public", "Droit des affaires", "Criminologie"], profil: ["Série A", "Série B"] },
-  { id: "data-analyst",    label: "Data analyst / Data scientist",      mention: "Informatique & Data",        niveau: "Bac + 5", description: "Analyse et interprète de grandes quantités de données pour aider à la prise de décisions stratégiques.", parcours: ["Statistiques", "Informatique", "Intelligence artificielle", "Big Data"], profil: ["Série C", "Série D"] },
-  { id: "designer",        label: "Designer graphique",                 mention: "Arts & Design",              niveau: "Bac + 3", description: "Crée des visuels, logos, interfaces et supports de communication pour les entreprises.", parcours: ["Arts visuels", "Communication", "Design numérique", "Multimédia"], profil: ["Série A", "Série C"] },
-  { id: "infirmier",       label: "Infirmier / Infirmière",             mention: "Sciences de la Santé",       niveau: "Bac + 3", description: "Prodigue des soins aux patients, assiste les médecins et assure le suivi thérapeutique.", parcours: ["Sciences infirmières", "Santé publique", "Soins médicaux"], profil: ["Série C", "Série D"] },
-  { id: "ingenieur-civil", label: "Ingénieur civil",                    mention: "Génie Civil",                niveau: "Bac + 5", description: "Conçoit et supervise des projets d'infrastructure : routes, ponts, bâtiments.", parcours: ["Génie civil", "BTP", "Environnement", "Hydraulique"], profil: ["Série C", "Série D", "Série technique"] },
-  { id: "ingenieur-info",  label: "Ingénieur en informatique",          mention: "Informatique",               niveau: "Bac + 5", description: "Développe et optimise des solutions numériques pour répondre aux besoins des entreprises.", parcours: ["Génie logiciel", "Informatique générale", "Systèmes et réseaux", "Intelligence artificielle"], profil: ["Série C", "Série D", "Série technique"] },
-  { id: "marketing",       label: "Marketing digital / Community mgr",  mention: "Marketing & Communication",  niveau: "Bac + 3", description: "Gère la présence en ligne des marques et pilote les stratégies de communication numérique.", parcours: ["Marketing", "Communication", "Commerce", "Numérique"], profil: ["Série A", "Série B", "Série C"] },
-  { id: "medecin",         label: "Médecin",                            mention: "Médecine",                   niveau: "Bac + 7", description: "Diagnostique et traite les maladies, prescrit des traitements et assure le suivi de santé des patients.", parcours: ["Médecine générale", "Chirurgie", "Pédiatrie", "Spécialités médicales"], profil: ["Série C", "Série D"] },
-  { id: "pilote",          label: "Pilote de ligne",                    mention: "Aéronautique",               niveau: "Bac + 3", description: "Conduit des avions commerciaux pour le transport de passagers et de marchandises.", parcours: ["Aéronautique", "Navigation aérienne", "Météorologie"], profil: ["Série C", "Série D"] },
-  { id: "pharmacien",      label: "Pharmacien",                         mention: "Pharmacie",                  niveau: "Bac + 6", description: "Prépare et dispense les médicaments, conseille les patients et veille à la sécurité des traitements.", parcours: ["Pharmacie", "Biochimie", "Chimie pharmaceutique"], profil: ["Série C", "Série D"] },
-  { id: "technicien-aero", label: "Technicien aéronautique",            mention: "Aéronautique & Maintenance", niveau: "Bac + 2", description: "Assure la maintenance, la réparation et le contrôle des aéronefs.", parcours: ["Maintenance aéronautique", "Électronique", "Mécanique"], profil: ["Série C", "Série D", "Série technique"] },
-];
 
-const DOMAINES_LIST = [
-  { id: "sante",     label: "Santé",                    keywords: ["santé", "médecine", "pharmacie", "infirmier"] },
-  { id: "tourisme",  label: "Tourisme / hôtellerie",    keywords: ["tourisme", "hôtellerie"] },
-  { id: "info",      label: "Informatique / numérique", keywords: ["informatique", "numérique", "data", "logiciel"] },
-  { id: "admin",     label: "Administration / gestion", keywords: ["administration", "gestion", "droit"] },
-  { id: "commerce",  label: "Commerce / banque",        keywords: ["commerce", "banque", "marketing"] },
-  { id: "genie",     label: "Génie civil / BTP",        keywords: ["génie", "btp", "civil", "construction"] },
-  { id: "industrie", label: "Industrie",                keywords: ["industrie", "mécanique", "maintenance"] },
-  { id: "arts",      label: "Arts / Communication",     keywords: ["arts", "communication", "design", "multimédia"] },
-  { id: "autres",    label: "Autres",                   keywords: [] },
-];
-
-// ── Fiche détaillée d'un métier ─────────────────────────────────────────────
-function MetierDetailsCard({ metier, onClose, useAzureBg = false }) {
+function MetierDetailsCard({ metier, onClose }) {
   if (!metier) return null;
-
-  const bgClass = useAzureBg
-    ? "bg-[#155faa]"
-    : "bg-white/10 backdrop-blur-2xl border border-white/25";
-
   return (
-    <div className={`relative rounded-2xl p-5 h-full flex flex-col ${bgClass}`}>
+    <div className="relative rounded-2xl p-5 h-full flex flex-col bg-white/10 backdrop-blur-2xl border border-white/25">
       {onClose && (
         <button
           onClick={onClose}
@@ -51,7 +26,6 @@ function MetierDetailsCard({ metier, onClose, useAzureBg = false }) {
           <HiX size={16} />
         </button>
       )}
-
       <div className="flex-1 overflow-y-auto scrollbar-thin-white space-y-4 pr-1">
         <div>
           <h3 className="text-white font-black text-xl leading-snug pr-8">{metier.label}</h3>
@@ -60,12 +34,10 @@ function MetierDetailsCard({ metier, onClose, useAzureBg = false }) {
             <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">Niveau : {metier.niveau}</span>
           </div>
         </div>
-
         <div>
           <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold mb-1">Description du métier</p>
           <p className="text-white text-sm leading-relaxed">{metier.description}</p>
         </div>
-
         {metier.parcours?.length > 0 && (
           <div>
             <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold mb-1.5">Parcours d'études possibles</p>
@@ -76,7 +48,6 @@ function MetierDetailsCard({ metier, onClose, useAzureBg = false }) {
             </div>
           </div>
         )}
-
         {metier.profil?.length > 0 && (
           <div>
             <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold mb-1.5">Séries recommandées</p>
@@ -92,128 +63,111 @@ function MetierDetailsCard({ metier, onClose, useAzureBg = false }) {
   );
 }
 
-// ── Card métier expandable (pour la liste domaine) ───────────────────────────
-function MetierExpandCard({ metier, onSelect }) {
-  const [open, setOpen] = useState(false);
-  const cardRef = useRef(null);
-  // eslint-disable-next-line no-unused-vars
-  const [openUpward, setOpenUpward] = useState(false);
-
-  const handleToggle = () => {
-    if (!open && cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      setOpenUpward(spaceBelow < 220);
-    }
-    setOpen(!open);
-  };
-
+function MetierCard({ metier, onSelect }) {
   return (
-    <div 
-      ref={cardRef} 
-      className="bg-white/10 backdrop-blur-xl border border-white/25 rounded-2xl overflow-hidden transition-all hover:bg-white/15"
+    <button
+      type="button"
+      onClick={() => onSelect(metier)}
+      className="w-full text-left bg-white/10 backdrop-blur-xl border border-white/25 rounded-2xl p-4 transition-all hover:bg-white/18 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
     >
-      {/* En-tête cliquable */}
-      <button
-        className="w-full flex items-start justify-between gap-3 p-4 text-left"
-        onClick={handleToggle}
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <span className="text-white font-bold text-base leading-snug">{metier.label}</span>
-            <span className="text-white/90 text-[10px] font-bold bg-[#1a3ea8]/80 backdrop-blur-sm px-2 py-0.5 rounded-full shrink-0">{metier.niveau}</span>
-          </div>
-          <p className={`text-white/80 text-xs leading-relaxed ${open ? "" : "line-clamp-1"}`}>{metier.description}</p>
-          <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider mt-1">{metier.mention}</p>
-        </div>
-        <div className="text-white/70 shrink-0 mt-0.5">
-          {open ? <HiChevronUp size={18} /> : <HiChevronDown size={18} />}
-        </div>
-      </button>
-
-      {/* Détails expandés */}
-      {open && (
-        <div className="px-4 pb-4 border-t border-white/15 pt-3 space-y-3 animate-fadeIn">
-          {metier.parcours?.length > 0 && (
-            <div>
-              <p className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-1.5">Parcours d'études</p>
-              <div className="flex flex-wrap gap-1.5">
-                {metier.parcours.map((p, i) => (
-                  <span key={i} className="text-[11px] bg-white/15 border border-white/20 px-2.5 py-1 rounded-full text-white/90">{p}</span>
-                ))}
-              </div>
-            </div>
-          )}
-          {metier.profil?.length > 0 && (
-            <div>
-              <p className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-1.5">Séries recommandées</p>
-              <div className="flex flex-wrap gap-1.5">
-                {metier.profil.map((p, i) => (
-                  <span key={i} className="text-[11px] bg-white/20 border border-white/25 text-white/90 px-2.5 py-1 rounded-full">{p}</span>
-                ))}
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => onSelect(metier)}
-            className="w-full mt-2 py-2.5 rounded-xl bg-[#155faa] hover:bg-[#114b8a] text-white text-sm font-black transition-all"
-          >
-            Sélectionner ce métier →
-          </button>
-        </div>
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <span className="text-white font-bold text-base leading-snug flex-1">{metier.label}</span>
+        <span className="text-white/90 text-[10px] font-bold bg-[#1a3ea8]/80 px-2 py-0.5 rounded-full shrink-0">{metier.niveau}</span>
+      </div>
+      {metier.description && (
+        <p className="text-white/75 text-xs leading-relaxed line-clamp-2 mb-1.5">{metier.description}</p>
       )}
-    </div>
+      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider">{metier.mention}</p>
+    </button>
   );
 }
 
-export default function Section2({ onSelectMetier, selectedMetier, onRetour }) {
+export default function Section2({ onSelectMetier, selectedMetier, onRetour, searchParam }) {
   const navigate = useNavigate();
+  const [allMetiers,  setAllMetiers]  = useState([]);
+  const [allMentions, setAllMentions] = useState([]);
+  const [_loading,    _setLoading]    = useState(true);
 
-  const [isModalOpen, setIsModalOpen]     = useState(false);
-  const [searchQuery, setSearchQuery]     = useState("");
-  const [localSelected, setLocalSelected] = useState(selectedMetier || null);
+  const [isMetierComboOpen, setIsMetierComboOpen] = useState(false);
+  const [searchQuery,       setSearchQuery]       = useState(searchParam || "");
+  const [localSelected,     setLocalSelected]     = useState(selectedMetier || null);
+
   const [selectedDomaine, setSelectedDomaine] = useState(null);
-  const [isComboOpen, setIsComboOpen]     = useState(false);
-  const [comboSearch, setComboSearch]     = useState("");
-  const [mode, setMode]                   = useState("idle");
-  const [modalSelected, setModalSelected] = useState(null);
-  const [comboPosition, setComboPosition] = useState("bottom");
+  const [isComboOpen,     setIsComboOpen]     = useState(false);
+  const [comboSearch,     setComboSearch]     = useState("");
+  const [comboPosition,   setComboPosition]   = useState("bottom");
 
-  const comboRef = useRef(null);
+  const [mode, setMode] = useState("idle");
+
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setEntered(true), 50);
+    return () => clearTimeout(t);
+  }, []);
+
+  const metierComboRef = useRef(null);
+  const comboRef       = useRef(null);
   const comboButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (searchParam && searchParam.trim()) {
+      setSearchQuery(searchParam);
+      setIsMetierComboOpen(true);
+    }
+  }, [searchParam]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [metiers, mentions] = await Promise.all([getAllMetiersCache(), getAllMentions()]);
+        setAllMetiers(metiers);
+        setAllMentions(mentions);
+      } catch (error) {
+        console.error("Erreur chargement données:", error);
+      } finally {
+        _setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const domainesList = useMemo(() =>
+    allMentions.map((m) => ({ id: m.id, label: m.label, keywords: [m.label.toLowerCase()] })),
+    [allMentions]
+  );
 
   const filteredMetiers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return METIERS_LIST;
-    return METIERS_LIST.filter((m) =>
-      (m.label + " " + m.mention + " " + m.description + " " + m.parcours.join(" ") + " " + m.profil.join(" "))
+    if (!q) return allMetiers;
+    return allMetiers.filter((m) =>
+      (m.label + " " + m.mention + " " + m.description + " " + (m.parcours?.join(" ") || ""))
         .toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, allMetiers]);
 
   const filteredDomaines = useMemo(() => {
     const q = comboSearch.trim().toLowerCase();
-    if (!q) return DOMAINES_LIST;
-    return DOMAINES_LIST.filter((d) => d.label.toLowerCase().includes(q));
-  }, [comboSearch]);
+    if (!q) return domainesList;
+    return domainesList.filter((d) => d.label.toLowerCase().includes(q));
+  }, [comboSearch, domainesList]);
 
   const metiersParDomaine = useMemo(() => {
     if (!selectedDomaine) return [];
-    if (selectedDomaine.id === "autres") return METIERS_LIST;
-    return METIERS_LIST.filter((m) => {
-      const hay = (m.mention + " " + m.parcours.join(" ") + " " + m.description).toLowerCase();
-      return selectedDomaine.keywords.some((k) => hay.includes(k));
+    return allMetiers.filter((m) => {
+      const mentionNorm = (m.mention || "").toLowerCase().trim();
+      const domaineNorm = selectedDomaine.label.toLowerCase().trim();
+      return mentionNorm === domaineNorm || mentionNorm.includes(domaineNorm) || domaineNorm.includes(mentionNorm);
     });
-  }, [selectedDomaine]);
-
-  const canValider = Boolean(localSelected || selectedDomaine);
+  }, [selectedDomaine, allMetiers]);
 
   const handleSelectMetier = (metier) => {
+    if (metier.id && metier.label) searchMetier(metier.id, metier.label).catch(console.error);
     setLocalSelected(metier);
     setSelectedDomaine(null);
-    setIsModalOpen(false);
+    setIsMetierComboOpen(false);
     setSearchQuery("");
     setMode("metier");
+    onSelectMetier?.(metier);
   };
 
   const handleSelectDomaine = (d) => {
@@ -225,370 +179,507 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour }) {
   };
 
   const handleValider = () => {
-    if (localSelected) { onSelectMetier?.(localSelected); return; }
-    if (selectedDomaine) {
-      onSelectMetier?.({ id: "domaine", label: selectedDomaine.label, isDomaine: true, results: metiersParDomaine });
-    }
+    if (localSelected) onSelectMetier?.(localSelected);
   };
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-    setModalSelected(localSelected || filteredMetiers[0] || null);
-  };
-
-  // Fonction pour calculer la position du combo sans utiliser useEffect
   const getComboPosition = () => {
     if (comboButtonRef.current) {
       const rect = comboButtonRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      return spaceBelow < 300 ? "top" : "bottom";
+      return window.innerHeight - rect.bottom < 300 ? "top" : "bottom";
     }
     return "bottom";
   };
 
-  // Ouvrir le combo et définir la position directement
   const handleToggleCombo = () => {
-    if (!isComboOpen) {
-      // Calculer la position avant d'ouvrir
-      const position = getComboPosition();
-      setComboPosition(position);
-    }
+    if (!isComboOpen) setComboPosition(getComboPosition());
     setIsComboOpen(!isComboOpen);
   };
 
-  // Fermer combobox en cliquant dehors
   useEffect(() => {
     const handler = (e) => {
-      if (comboRef.current && !comboRef.current.contains(e.target)) setIsComboOpen(false);
+      if (comboRef.current       && !comboRef.current.contains(e.target))       setIsComboOpen(false);
+      if (metierComboRef.current && !metierComboRef.current.contains(e.target)) setIsMetierComboOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden font-['Sora'] flex bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+    <div
+      className="s2-root"
+      style={{
+        opacity: entered ? 1 : 0,
+        transform: entered ? "translateY(0)" : "translateY(14px)",
+        transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
+      }}
+    >
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-      {/* ── Déco SVG ── */}
-      <div className="absolute top-0 right-0 pointer-events-none z-0 opacity-80 origin-top-right">
-        <svg width="220" height="200" viewBox="0 0 260 240" fill="none">
-          <path d="M130 38 L232 94 L130 150 L28 94 Z" stroke="white" strokeWidth="2.6" fill="none" strokeLinejoin="round"/>
-          <path d="M52 108 Q52 160 130 188 Q208 160 208 108" stroke="white" strokeWidth="2.6" fill="none" strokeLinecap="round"/>
-          <line x1="232" y1="94" x2="232" y2="148" stroke="white" strokeWidth="2.6" strokeLinecap="round"/>
-          <circle cx="232" cy="155" r="7" fill="white"/>
-          <line x1="130" y1="150" x2="130" y2="188" stroke="white" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4"/>
-          <circle cx="130" cy="94" r="5" fill="white"/>
+      {/* Déco SVG */}
+      <div className="s2-deco-tr">
+        <svg width="200" height="180" viewBox="0 0 260 240" fill="none">
+          <path d="M130 38 L232 94 L130 150 L28 94 Z" stroke="white" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
+          <path d="M52 108 Q52 160 130 188 Q208 160 208 108" stroke="white" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+          <line x1="232" y1="94" x2="232" y2="148" stroke="white" strokeWidth="2.6" strokeLinecap="round" />
+          <circle cx="232" cy="155" r="7" fill="white" />
+          <line x1="130" y1="150" x2="130" y2="188" stroke="white" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
+          <circle cx="130" cy="94" r="5" fill="white" />
         </svg>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-0 opacity-10">
-        <svg width="100%" height="90" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax meet" fill="none">
-          <rect x="10" y="55" width="30" height="45" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="50" y="35" width="40" height="65" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="100" y="50" width="25" height="50" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="135" y="30" width="50" height="70" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="195" y="45" width="35" height="55" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="240" y="55" width="28" height="45" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="278" y="38" width="42" height="62" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="330" y="50" width="30" height="50" stroke="white" strokeWidth="1.5" fill="none"/>
-          <rect x="370" y="60" width="25" height="40" stroke="white" strokeWidth="1.5" fill="none"/>
-        </svg>
-      </div>
-      <div className="absolute top-[45%] left-0 right-0 pointer-events-none z-0 opacity-10">
-        <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="none">
-          <path d="M0,30 Q150,10 300,30 T600,30 T900,30 T1200,30" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      <div className="s2-deco-bld">
+        <svg width="100%" height="80" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax meet" fill="none">
+          <rect x="10"  y="55" width="30" height="45" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="50"  y="35" width="40" height="65" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="100" y="50" width="25" height="50" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="135" y="30" width="50" height="70" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="195" y="45" width="35" height="55" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="240" y="55" width="28" height="45" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="278" y="38" width="42" height="62" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="330" y="50" width="30" height="50" stroke="white" strokeWidth="1.5" fill="none" />
+          <rect x="370" y="60" width="25" height="40" stroke="white" strokeWidth="1.5" fill="none" />
         </svg>
       </div>
 
-      {/* ═══════════════════════
-          Colonne gauche
-      ═══════════════════════ */}
-      <div className="relative z-10 flex flex-col h-full w-full lg:w-1/2 xl:w-[52%] px-6 sm:px-10 lg:px-12 xl:px-16 pt-8 pb-4">
+      {/* Layout */}
+      <div className="s2-layout">
 
-        <div className="flex-1 overflow-y-auto scrollbar-hide pb-2">
-          {onRetour && (
-            <button onClick={onRetour} className="text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center mb-2" aria-label="Retour">
-              <IoArrowBackCircleOutline size={38} />
-            </button>
-          )}
+        {/* ══ Colonne gauche ══ */}
+        <div className="s2-left">
+          <div className="s2-scroll">
 
-          <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black text-white leading-tight tracking-tight mb-3">
-            EXPLORER<br />LES MÉTIERS
-          </h1>
-          <p className="text-sm text-white/80 leading-relaxed mb-6 max-w-sm">
-            Aide les élèves et les parents à choisir un métier et le parcours d&apos;études adapté.
-          </p>
+            {/* Retour */}
+            {onRetour && (
+              <button onClick={onRetour} className="s2-back" aria-label="Retour"
+                style={{ animation: "s2In 0.5s cubic-bezier(0.16,1,0.3,1) 0.1s both" }}>
+                <IoArrowBackCircleOutline size={36} />
+              </button>
+            )}
 
-          {/* Input recherche */}
-          <div className="w-full mb-4">
-            <button
-              className="w-full bg-white border-2 border-gray-100 rounded-2xl px-5 py-3.5 flex items-center justify-between cursor-pointer shadow-lg hover:shadow-xl transition-all"
-              onClick={handleOpenModal}
-            >
-              <span className={`font-medium text-sm ${localSelected ? "text-[#1250c8] font-bold" : "text-gray-400"} truncate max-w-[80%]`}>
-                {localSelected ? localSelected.label : "Rechercher un métier (Ex : développeur, infirmier…)"}
-              </span>
-              <HiOutlineSearch className="text-gray-400 text-lg flex-shrink-0" />
-            </button>
-          </div>
-
-          {/* Mode metier : fiche résumé sur mobile */}
-          {mode === "metier" && localSelected && (
-            <div className="mb-4 h-64 animate-fadeIn lg:hidden">
-              <MetierDetailsCard metier={localSelected} onClose={() => { setLocalSelected(null); setMode("idle"); }} />
+            {/* Titre */}
+            <div style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both" }}>
+              <h1 className="s2-h1">
+                EXPLORER<br /><span className="s2-h1-sub">LES MÉTIERS</span>
+              </h1>
+              <p className="s2-desc">
+                Aide les élèves et les parents à choisir un métier et le parcours d'études adapté.
+              </p>
             </div>
-          )}
 
-          {/* Séparateur + Combobox */}
-          {mode !== "metier" && (
-            <>
-              <div className="flex items-center my-4">
-                <div className="flex-1 h-px bg-white/30" />
-                <span className="px-4 text-white/90 text-xs font-bold tracking-[0.2em]">- OU -</span>
-                <div className="flex-1 h-px bg-white/30" />
+            {/* ── COMBOBOX 1 : Recherche métier ── */}
+            {/* CORRECTION Z-INDEX ICI */}
+            <div className="s2-cbwrap" ref={metierComboRef}
+              style={{ 
+                animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.25s both",
+                zIndex: isMetierComboOpen ? 100 : 10
+              }}>
+              <p className="s2-lbl">Rechercher un métier</p>
+              <button className="s2-trigger" onClick={() => setIsMetierComboOpen(!isMetierComboOpen)}>
+                <span className={localSelected ? "s2-val blue" : "s2-ph"}>
+                  {localSelected ? localSelected.label : "Ex : développeur, infirmier…"}
+                </span>
+                <HiOutlineSearch className="s2-icon blue" />
+              </button>
+
+              {isMetierComboOpen && (
+                <div className="s2-drop s2-fadein">
+                  <div className="s2-drop-search">
+                    <HiOutlineSearch className="s2-drop-sicon" />
+                    <input
+                      type="text"
+                      placeholder="Médecin, designer, pilote…"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="s2-drop-input"
+                      autoFocus
+                    />
+                    {searchQuery && (
+                      <button className="s2-drop-clr" onClick={() => setSearchQuery("")}><HiX size={13} /></button>
+                    )}
+                  </div>
+                  <div className="s2-drop-list">
+                    {filteredMetiers.length > 0 ? filteredMetiers.map((m, i) => (
+                      <button key={m.id} onClick={() => handleSelectMetier(m)}
+                        className={`s2-drop-item ${localSelected?.id === m.id ? "active-blue" : ""} ${i !== filteredMetiers.length - 1 ? "bordered" : ""}`}>
+                        <div className="s2-drop-row">
+                          <span className="s2-drop-name">{m.label}</span>
+                          {localSelected?.id === m.id && <HiCheck className="s2-chk blue" />}
+                        </div>
+                        <span className="s2-badge blue">{m.mention}</span>
+                      </button>
+                    )) : (
+                      <div className="s2-empty">
+                        <p>Aucun métier trouvé</p>
+                        <span>Essayez un autre mot-clé</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Fiche métier mobile */}
+            {mode === "metier" && localSelected && (
+              <div className="s2-fiche-mob s2-fadein lg:hidden">
+                <MetierDetailsCard metier={localSelected} onClose={() => { setLocalSelected(null); setMode("idle"); }} />
               </div>
+            )}
 
-              {/* Combobox */}
-              <div className="w-full mb-4 relative" ref={comboRef}>
-                <p className="text-[11px] text-white/70 font-bold mb-2 uppercase tracking-widest">Explorer par domaine</p>
+            {/* ── Séparateur + COMBOBOX 2 ── */}
+            {mode !== "metier" && (
+              <>
+                <div className="s2-sep" style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}>
+                  <div className="s2-sep-l" /><span className="s2-sep-txt">ou</span><div className="s2-sep-l" />
+                </div>
 
-                <button
-                  ref={comboButtonRef}
-                  onClick={handleToggleCombo}
-                  className={`w-full bg-white/10 backdrop-blur-xl border rounded-xl px-4 py-2.5 flex items-center justify-between transition-all
-                    ${isComboOpen ? "border-white/70 ring-2 ring-white/20" : "border-white/30 hover:border-white/60 hover:bg-white/15"}`}
-                >
-                  <span className={`text-sm font-semibold ${selectedDomaine ? "text-white" : "text-white/60"}`}>
-                    {selectedDomaine ? selectedDomaine.label : "Sélectionner un domaine…"}
-                  </span>
-                  <HiChevronDown className={`text-white/80 text-lg transition-transform duration-200 flex-shrink-0 ${isComboOpen ? "rotate-180" : ""}`} />
-                </button>
+                {/* CORRECTION Z-INDEX ICI */}
+                <div className="s2-cbwrap" ref={comboRef}
+                  style={{ 
+                    animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.4s both",
+                    zIndex: isComboOpen ? 100 : 5
+                  }}>
+                  <p className="s2-lbl">Explorer par domaine</p>
+                  <button ref={comboButtonRef} onClick={handleToggleCombo}
+                    className={`s2-trigger ${isComboOpen ? "open-green" : ""}`}>
+                    <span className={selectedDomaine ? "s2-val green" : "s2-ph"}>
+                      {selectedDomaine ? selectedDomaine.label : "Sélectionner un domaine…"}
+                    </span>
+                    <HiChevronDown className={`s2-icon green ${isComboOpen ? "rot180" : ""}`} />
+                  </button>
 
-                {/* Dropdown — position dynamique (au-dessus ou en dessous) */}
-                {isComboOpen && (
-                  <div 
-                    className={`absolute left-0 right-0 ${comboPosition === "top" ? "bottom-full mb-2" : "top-full mt-2"} bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-fadeIn`}
-                  >
-                    <div className="p-2 border-b border-gray-100">
-                      <div className="relative">
-                        <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  {isComboOpen && (
+                    <div className={`s2-drop s2-fadein ${comboPosition === "top" ? "drop-top" : ""}`}>
+                      <div className="s2-drop-search">
+                        <HiOutlineSearch className="s2-drop-sicon" />
                         <input
                           type="text"
                           placeholder="Rechercher un domaine…"
                           value={comboSearch}
                           onChange={(e) => setComboSearch(e.target.value)}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1250c8] focus:border-transparent"
+                          className="s2-drop-input green"
                           autoFocus
                         />
+                        {comboSearch && (
+                          <button className="s2-drop-clr" onClick={() => setComboSearch("")}><HiX size={13} /></button>
+                        )}
                       </div>
-                    </div>
-                    <div className="max-h-44 overflow-y-auto overscroll-contain scrollbar-gray">
-                      {filteredDomaines.length > 0 ? (
-                        filteredDomaines.map((d, i) => (
-                          <button
-                            key={d.id}
-                            onClick={() => handleSelectDomaine(d)}
-                            className={`w-full px-4 py-2.5 flex items-center gap-3 text-left transition-all
-                              ${selectedDomaine?.id === d.id ? "bg-blue-50 text-[#1250c8]" : "text-gray-700 hover:bg-gray-50"}
-                              ${i !== filteredDomaines.length - 1 ? "border-b border-gray-50" : ""}`}
-                          >
-                            <span className="text-sm font-semibold flex-1">{d.label}</span>
-                            {selectedDomaine?.id === d.id && <HiCheck className="text-[#1250c8] text-base flex-shrink-0" />}
+                      <div className="s2-drop-list">
+                        {filteredDomaines.length > 0 ? filteredDomaines.map((d, i) => (
+                          <button key={d.id} onClick={() => handleSelectDomaine(d)}
+                            className={`s2-drop-item ${selectedDomaine?.id === d.id ? "active-green" : ""} ${i !== filteredDomaines.length - 1 ? "bordered" : ""}`}>
+                            <span className="s2-drop-name">{d.label}</span>
+                            {selectedDomaine?.id === d.id && <HiCheck className="s2-chk green" />}
                           </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-5 text-center text-sm text-gray-400">Aucun domaine trouvé</div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Résultats domaine sur Mobile (expandable cards) */}
-              {mode === "domaine" && selectedDomaine && metiersParDomaine.length > 0 && (
-                <div className="lg:hidden mt-3 animate-fadeIn pb-10">
-                  <div className="text-center mb-4">
-                    <h2 className="text-white font-black text-2xl">{metiersParDomaine.length} métiers trouvés</h2>
-                    <p className="text-white/60 text-xs mt-0.5 tracking-widest uppercase">{selectedDomaine.label}</p>
-                  </div>
-                  <div className="space-y-2">
-                    {metiersParDomaine.map((m) => (
-                      <MetierExpandCard key={m.id} metier={m} onSelect={handleSelectMetier} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Bouton + Home */}
-        <div className="shrink-0 pt-3 flex flex-col items-center gap-3">
-          <button
-            className={`w-full max-w-sm py-3.5 rounded-xl font-black text-sm uppercase tracking-wide transition-all shadow-lg ${
-              canValider
-                ? "bg-[#1a3ea8] text-white hover:bg-[#122d88] hover:-translate-y-0.5"
-                : "bg-white/20 text-white/40 backdrop-blur-md cursor-not-allowed"
-            }`}
-            onClick={handleValider}
-            disabled={!canValider}
-          >
-            {mode === "metier" ? "Continuer →" : "Lancer la recherche"}
-          </button>
-          <button onClick={() => navigate("/acceuil/orientation")} className="text-white/70 hover:text-white transition-colors" aria-label="Accueil">
-            <HiOutlineHome size={26} />
-          </button>
-        </div>
-      </div>
-
-      {/* ═══════════════════════
-          Colonne droite — Desktop
-      ═══════════════════════ */}
-      <div className="hidden lg:flex relative z-10 w-[48%] flex-col px-10 xl:px-14 py-10 h-full">
-
-        {/* Mode METIER — fiche détaillée */}
-        {mode === "metier" && localSelected && (
-          <div className="h-full animate-fadeIn">
-            <MetierDetailsCard
-              metier={localSelected}
-              onClose={() => { setLocalSelected(null); setMode("idle"); }}
-            />
-          </div>
-        )}
-
-        {/* Mode DOMAINE — liste expandable */}
-        {mode === "domaine" && selectedDomaine && (
-          <div className="w-full h-full flex flex-col">
-            <div className="text-center mb-5 shrink-0">
-              <h2 className="text-white font-black text-4xl mb-1">
-                {metiersParDomaine.length} métiers trouvés
-              </h2>
-              <p className="text-white/70 font-semibold tracking-widest uppercase text-sm">
-                {selectedDomaine.label}
-              </p>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin-white pb-6">
-              {metiersParDomaine.map((m) => (
-                <MetierExpandCard key={m.id} metier={m} onSelect={handleSelectMetier} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Mode IDLE — colonne vide */}
-        {mode === "idle" && <div className="w-full h-full" />}
-      </div>
-
-      {/* ═══════════════════════
-          MODAL Recherche (Plein écran mobile)
-      ═══════════════════════ */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-fadeIn md:p-4">
-          <div className="bg-white w-full h-full md:h-[85vh] md:max-w-5xl md:rounded-3xl flex flex-col shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="px-4 md:px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <h2 className="text-lg font-black text-slate-800">Rechercher un métier</h2>
-              <button onClick={() => { setIsModalOpen(false); setSearchQuery(""); }} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
-                <HiX size={22} />
-              </button>
-            </div>
-
-            {/* Input */}
-            <div className="p-4 border-b border-gray-100 bg-slate-50/50 shrink-0">
-              <div className="relative">
-                <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
-                <input
-                  type="text"
-                  placeholder="Médecin, designer, pilote…"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#155faa] focus:border-transparent shadow-sm"
-                  autoFocus
-                />
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="flex-1 overflow-hidden">
-              <div className="h-full flex flex-col md:grid md:grid-cols-[380px_1fr]">
-                {/* Liste (Scrollable) */}
-                <div className="flex-1 md:flex-none h-full overflow-y-auto p-4 bg-slate-50/50 scrollbar-gray order-2 md:order-1 border-r border-slate-100">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 sticky top-0 bg-slate-50 py-1">
-                    {filteredMetiers.length} métier{filteredMetiers.length > 1 ? "s" : ""} trouvé{filteredMetiers.length > 1 ? "s" : ""}
-                  </p>
-                  <div className="space-y-2 pb-4">
-                    {filteredMetiers.map((m) => {
-                      const active = modalSelected?.id === m.id;
-                      return (
-                        <button
-                          key={m.id}
-                          onClick={() => setModalSelected(m)}
-                          className={`w-full text-left px-4 py-3 rounded-2xl border transition-all bg-white
-                            ${active ? "border-[#155faa] shadow-md ring-1 ring-[#155faa]/20" : "border-transparent hover:border-slate-200 hover:shadow-sm"}`}
-                        >
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <span className="font-black text-slate-800 text-sm leading-snug">{m.label}</span>
-                            <span className="text-[10px] font-black px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 shrink-0">{m.niveau}</span>
-                          </div>
-                          <span className="text-[10px] font-bold px-2 py-1 rounded border border-blue-100 text-[#155faa]">{m.mention}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Détail (Scrollable) */}
-                <div className="shrink-0 h-[38vh] md:h-full overflow-y-auto p-4 md:p-5 bg-slate-100/50 scrollbar-gray order-1 md:order-2 border-b md:border-b-0 border-slate-200">
-                  <p className="md:hidden text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Aperçu</p>
-                  {modalSelected ? (
-                    <MetierDetailsCard metier={modalSelected} useAzureBg />
-                  ) : (
-                    <div className="h-full flex items-center justify-center text-slate-400 text-sm font-medium">
-                      Sélectionnez un métier
+                        )) : (
+                          <div className="s2-empty"><p>Aucun domaine trouvé</p></div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* Footer */}
-            <div className="px-4 md:px-6 py-4 border-t border-slate-100 bg-white flex items-center justify-between gap-3 shrink-0">
-              <button
-                onClick={() => { setIsModalOpen(false); setSearchQuery(""); }}
-                className="px-4 py-3 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={() => modalSelected && handleSelectMetier(modalSelected)}
-                disabled={!modalSelected}
-                className={`px-5 py-3 rounded-xl text-sm font-black transition-all flex-1 md:flex-none ${
-                  modalSelected ? "bg-[#155faa] text-white hover:bg-[#114b8a]" : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                }`}
-              >
-                Sélectionner
-              </button>
-            </div>
+                {/* Résultats domaine mobile */}
+                {mode === "domaine" && selectedDomaine && (
+                  <div className="s2-dom-res s2-fadein lg:hidden">
+                    <h2 className="s2-dom-cnt">{metiersParDomaine.length} métier{metiersParDomaine.length > 1 ? "s" : ""}</h2>
+                    <p className="s2-dom-name">{selectedDomaine.label}</p>
+                    {metiersParDomaine.length > 0 ? (
+                      <div className="s2-cards">
+                        {metiersParDomaine.map((m) => <MetierCard key={m.id} metier={m} onSelect={handleSelectMetier} />)}
+                      </div>
+                    ) : <p className="s2-nores">Aucun métier trouvé pour ce domaine.</p>}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="s2-foot">
+            {mode === "metier" && localSelected && (
+              <button className="s2-btn-cont" onClick={handleValider}>Continuer →</button>
+            )}
+            <button className="s2-btn-home" onClick={() => navigate("/acceuil/orientation")} aria-label="Accueil">
+              <HiOutlineHome size={26} />
+            </button>
           </div>
         </div>
-      )}
+
+        {/* ══ Colonne droite — Desktop ══ */}
+        <div className="s2-right">
+          {mode === "metier" && localSelected && (
+            <div className="h-full s2-fadein">
+              <MetierDetailsCard metier={localSelected} onClose={() => { setLocalSelected(null); setMode("idle"); }} />
+            </div>
+          )}
+          {mode === "domaine" && selectedDomaine && (
+            <div className="s2-r-dom s2-fadein">
+              <div className="s2-r-domhdr">
+                <h2 className="s2-dom-cnt lg">
+                  {metiersParDomaine.length}<span className="sub"> métier{metiersParDomaine.length > 1 ? "s" : ""}</span>
+                </h2>
+                <p className="s2-dom-name">{selectedDomaine.label}</p>
+              </div>
+              {metiersParDomaine.length > 0 ? (
+                <div className="s2-r-list">
+                  {metiersParDomaine.map((m) => <MetierCard key={m.id} metier={m} onSelect={handleSelectMetier} />)}
+                </div>
+              ) : <p className="s2-nores">Aucun métier trouvé pour ce domaine.</p>}
+            </div>
+          )}
+          {mode === "idle" && (
+            <div className="s2-idle">
+              <svg width="140" height="140" viewBox="0 0 180 180" fill="none">
+                <circle cx="90" cy="90" r="70" stroke="white" strokeWidth="2" strokeDasharray="8 6" />
+                <circle cx="90" cy="90" r="45" stroke="white" strokeWidth="1.5" />
+                <circle cx="90" cy="90" r="8" fill="white" />
+                <line x1="90" y1="45" x2="90" y2="62" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                <line x1="90" y1="118" x2="90" y2="135" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                <line x1="45" y1="90" x2="62" y2="90" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                <line x1="118" y1="90" x2="135" y2="90" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <p>Recherchez un métier<br />ou sélectionnez un domaine</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
+        /* Base */
+        .s2-root *, .s2-root *::before, .s2-root *::after { box-sizing: border-box; font-family: 'Sora', sans-serif; }
+
+        /* Racine — 100dvh pour éviter l'espace blanc mobile */
+        .s2-root {
+          position: relative;
+          width: 100%;
+          height: 100dvh;
+          min-height: 100svh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          background: linear-gradient(135deg,#1250c8 0%,#1a6dcc 25%,#28b090 55%,#a0d820 80%,#c2e832 100%);
         }
-        .animate-fadeIn { animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .scrollbar-gray::-webkit-scrollbar { width: 6px; }
-        .scrollbar-gray::-webkit-scrollbar-track { background: rgba(15,23,42,0.04); border-radius: 999px; }
-        .scrollbar-gray::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.20); border-radius: 999px; }
-        .scrollbar-gray::-webkit-scrollbar-thumb:hover { background: rgba(15,23,42,0.30); }
-        .scrollbar-thin-white::-webkit-scrollbar { width: 5px; }
-        .scrollbar-thin-white::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin-white::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 999px; }
-        .scrollbar-thin-white::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.40); }
+
+        /* Décos */
+        .s2-deco-tr { position:absolute;top:0;right:0;pointer-events:none;z-index:0;opacity:.75; }
+        .s2-deco-bld { position:absolute;bottom:0;left:0;right:0;pointer-events:none;z-index:0;opacity:.10; }
+
+        /* Layout principal */
+        .s2-layout { position:relative;z-index:10;display:flex;flex:1;height:100%;overflow:hidden; }
+
+        /* Colonne gauche */
+        .s2-left { display:flex;flex-direction:column;width:100%;height:100%; }
+        @media(min-width:1024px){ .s2-left{width:50%;} }
+        @media(min-width:1280px){ .s2-left{width:52%;} }
+
+        /* Zone scrollable — remplit l'espace restant */
+        .s2-scroll {
+          flex:1;min-height:0;overflow-y:auto;
+          padding: clamp(1.25rem,4vw,2.5rem) clamp(1.25rem,5vw,3.5rem) 0.75rem;
+          scrollbar-width:none;-ms-overflow-style:none;
+        }
+        .s2-scroll::-webkit-scrollbar{display:none;}
+
+        /* Retour */
+        .s2-back {
+          display:inline-flex;align-items:center;justify-content:center;
+          color:rgba(255,255,255,.8);background:transparent;border:none;cursor:pointer;
+          width:2.75rem;height:2.75rem;border-radius:.75rem;margin-bottom:.5rem;
+          transition:color .2s,background .2s;
+        }
+        .s2-back:hover{color:white;background:rgba(255,255,255,.1);}
+
+        /* Titre */
+        .s2-h1 {
+          font-size:clamp(2.25rem,6.5vw,3.75rem);font-weight:900;
+          color:white;line-height:1;letter-spacing:-.03em;margin:0 0 .6rem;
+        }
+        .s2-h1-sub { color:rgba(255,255,255,.65); }
+        .s2-desc {
+          font-size:clamp(.8rem,2vw,.95rem);color:rgba(255,255,255,.72);
+          line-height:1.6;max-width:30ch;margin:0 0 clamp(1rem,3vw,1.75rem);
+        }
+
+        /* Label */
+        .s2-lbl {
+          font-size:.6rem;color:rgba(255,255,255,.85);font-weight:700;
+          letter-spacing:.15em;text-transform:uppercase;margin:0 0 .45rem;
+        }
+
+        /* Combobox wrapper */
+        .s2-cbwrap { position:relative;width:100%;margin-bottom:.75rem; }
+
+        /* Trigger bouton blanc */
+        .s2-trigger {
+          width:100%;background:white;border:2px solid transparent;
+          border-radius:.875rem;
+          padding:clamp(.7rem,1.8vw,.875rem) clamp(.875rem,2.2vw,1.125rem);
+          display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+          cursor:pointer;
+          box-shadow:0 4px 18px rgba(0,0,0,.13);
+          transition:box-shadow .2s,border-color .2s,transform .15s;
+          text-align:left;
+        }
+        .s2-trigger:hover{box-shadow:0 6px 24px rgba(0,0,0,.17);transform:translateY(-1px);}
+        .s2-trigger.open-green{border-color:#86efac;}
+
+        .s2-ph  {font-size:.875rem;font-weight:500;color:#9ca3af;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .s2-val {font-size:.875rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .s2-val.blue  {color:#1250c8;}
+        .s2-val.green {color:#5E9422;}
+
+        .s2-icon {font-size:1.125rem;flex-shrink:0;transition:transform .2s;}
+        .s2-icon.blue  {color:#60a5fa;}
+        .s2-icon.green {color:#4ade80;}
+        .rot180{transform:rotate(180deg);}
+
+        /* ────────────────────────────
+            Dropdown
+            Positionné strictement sous
+            le trigger via top: calc(100% + 8px)
+        ──────────────────────────── */
+        .s2-drop {
+          position:absolute;left:0;right:0;
+          top:calc(100% + 8px);   /* GAP clair entre trigger et dropdown */
+          background:white;
+          border-radius:1rem;
+          box-shadow:0 8px 36px rgba(0,0,0,.17);
+          border:1px solid #f1f5f9;
+          overflow:hidden;
+          z-index:500;
+        }
+        .drop-top{top:auto;bottom:calc(100% + 8px);}
+
+        /* Input de recherche dans le dropdown */
+        .s2-drop-search {
+          position:relative;
+          padding:.5rem .5rem .5rem .5rem;
+          background:#f8fafc;
+          border-bottom:1px solid #f1f5f9;
+        }
+        .s2-drop-sicon {
+          position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+          color:#94a3b8;font-size:.8rem;pointer-events:none;
+        }
+        .s2-drop-input {
+          width:100%;
+          background:white;border:1.5px solid #e2e8f0;border-radius:.625rem;
+          padding:.45rem 1.75rem .45rem 2.1rem;
+          font-size:.875rem;font-family:'Sora',sans-serif;
+          outline:none;transition:border-color .2s,box-shadow .2s;
+        }
+        .s2-drop-input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.18);}
+        .s2-drop-input.green:focus{border-color:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.18);}
+        .s2-drop-clr {
+          position:absolute;right:.875rem;top:50%;transform:translateY(-50%);
+          color:#94a3b8;background:none;border:none;cursor:pointer;
+          display:flex;align-items:center;padding:0;
+        }
+
+        /* Liste items */
+        .s2-drop-list{max-height:13rem;overflow-y:auto;overscroll-behavior:contain;}
+        .s2-drop-list::-webkit-scrollbar{width:4px;}
+        .s2-drop-list::-webkit-scrollbar-track{background:#f8fafc;}
+        .s2-drop-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px;}
+
+        .s2-drop-item {
+          width:100%;padding:.7rem 1rem;
+          display:flex;flex-direction:column;gap:.25rem;
+          text-align:left;background:none;border:none;cursor:pointer;
+          transition:background .15s;
+        }
+        .s2-drop-item:hover{background:#eff6ff;}
+        .s2-drop-item.active-blue{background:#eff6ff;}
+        .s2-drop-item.active-green{background:#f0fdf4;}
+        .s2-drop-item.bordered{border-bottom:1px solid #f8fafc;}
+
+        .s2-drop-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
+        .s2-drop-name{font-size:.875rem;font-weight:700;color:#1e293b;}
+        .s2-chk{font-size:1rem;flex-shrink:0;}
+        .s2-chk.blue{color:#1250c8;}.s2-chk.green{color:#5E9422;}
+        .s2-badge{display:inline-block;font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:.25rem;}
+        .s2-badge.blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;}
+        .s2-empty{padding:1.25rem 1rem;text-align:center;}
+        .s2-empty p{font-size:.875rem;color:#94a3b8;margin:0 0 .2rem;}
+        .s2-empty span{font-size:.75rem;color:#cbd5e1;}
+
+        /* Séparateur */
+        .s2-sep{display:flex;align-items:center;margin:clamp(.75rem,2vw,1.1rem) 0;}
+        .s2-sep-l{flex:1;height:1px;background:rgba(255,255,255,.22);}
+        .s2-sep-txt{padding:0 .875rem;font-size:.6rem;font-weight:900;color:rgba(255,255,255,.75);letter-spacing:.25em;text-transform:uppercase;}
+
+        /* Fiche mobile */
+        .s2-fiche-mob{margin-bottom:1rem;height:15rem;}
+
+        /* Résultats domaine mobile */
+        .s2-dom-res{margin-top:.75rem;padding-bottom:2rem;}
+        .s2-cards{display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;}
+        .s2-dom-cnt{font-size:clamp(1.25rem,4vw,1.75rem);font-weight:900;color:white;margin:0;}
+        .s2-dom-cnt.lg{font-size:clamp(2rem,5vw,3rem);line-height:1;}
+        .s2-dom-cnt .sub{font-size:1.25rem;font-weight:600;color:rgba(255,255,255,.6);}
+        .s2-dom-name{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.2em;text-transform:uppercase;margin:.25rem 0 0;}
+        .s2-nores{font-size:.875rem;color:rgba(255,255,255,.55);}
+
+        /* Footer */
+        .s2-foot{
+          flex-shrink:0;
+          padding:.75rem clamp(1.25rem,5vw,3.5rem) clamp(.875rem,2.5vw,1.25rem);
+          display:flex;flex-direction:column;align-items:center;gap:.625rem;
+        }
+        .s2-btn-cont{
+          width:100%;max-width:26rem;
+          padding:.875rem 1.5rem;border-radius:.875rem;
+          font-weight:900;font-size:.875rem;text-transform:uppercase;letter-spacing:.08em;
+          background:white;color:#1250c8;border:none;cursor:pointer;
+          box-shadow:0 4px 18px rgba(0,0,0,.12);
+          transition:background .2s,transform .15s,box-shadow .2s;
+        }
+        .s2-btn-cont:hover{background:#eff6ff;transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.15);}
+        .s2-btn-home{
+          color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;
+          padding:.5rem;border-radius:.75rem;transition:color .2s,background .2s;
+        }
+        .s2-btn-home:hover{color:white;background:rgba(255,255,255,.1);}
+
+        /* Colonne droite */
+        .s2-right{display:none;}
+        @media(min-width:1024px){
+          .s2-right{
+            display:flex;flex-direction:column;
+            width:50%;height:100%;
+            padding:2.5rem clamp(1.5rem,3.5vw,3rem);
+          }
+        }
+        @media(min-width:1280px){.s2-right{width:48%;}}
+
+        .s2-r-dom{width:100%;height:100%;display:flex;flex-direction:column;}
+        .s2-r-domhdr{margin-bottom:1.25rem;flex-shrink:0;}
+        .s2-r-list{
+          flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;
+          padding-right:.5rem;padding-bottom:1.5rem;
+        }
+        .s2-r-list::-webkit-scrollbar{width:5px;}
+        .s2-r-list::-webkit-scrollbar-track{background:transparent;}
+        .s2-r-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px;}
+
+        .s2-idle{
+          width:100%;height:100%;display:flex;flex-direction:column;
+          align-items:center;justify-content:center;
+          opacity:.28;text-align:center;gap:1rem;
+        }
+        .s2-idle p{color:white;font-size:.875rem;font-weight:600;line-height:1.6;margin:0;}
+
+        /* Animations */
+        @keyframes s2In{from{opacity:0;transform:translateX(-14px);}to{opacity:1;transform:translateX(0);}}
+        @keyframes s2FadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+        .s2-fadein{animation:s2FadeIn .25s cubic-bezier(0.16,1,0.3,1) both;}
+
+        /* Scrollbar fiche détail */
+        .scrollbar-thin-white::-webkit-scrollbar{width:5px;}
+        .scrollbar-thin-white::-webkit-scrollbar-track{background:transparent;}
+        .scrollbar-thin-white::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px;}
+        .scrollbar-thin-white::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.4);}
       `}</style>
     </div>
   );

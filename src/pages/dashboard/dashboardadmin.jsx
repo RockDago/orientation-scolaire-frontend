@@ -7,7 +7,6 @@ const DashboardAdmin = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Données utilisateur enrichies pour le développement
   const user = {
     prenom: "Admin",
     nom: "Administrateur",

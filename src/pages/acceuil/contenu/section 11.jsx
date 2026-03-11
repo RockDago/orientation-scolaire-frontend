@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome } from "react-icons/hi";
 import { FiArrowRight, FiCheckCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { getMetierById } from "../../../services/metier.services";
 
 function GradBg() {
   return (
@@ -18,7 +20,7 @@ function GradBg() {
       </div>
       <div className="absolute bottom-0 left-0 right-0 opacity-10">
         <svg width="100%" height="100" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax meet" fill="none">
-          <rect x="50" y="35" width="40" height="65" stroke="white" strokeWidth="1.5" fill="none"/>
+          <rect x="50"  y="35" width="40" height="65" stroke="white" strokeWidth="1.5" fill="none"/>
           <rect x="135" y="30" width="50" height="70" stroke="white" strokeWidth="1.5" fill="none"/>
           <rect x="195" y="45" width="35" height="55" stroke="white" strokeWidth="1.5" fill="none"/>
           <rect x="278" y="38" width="42" height="62" stroke="white" strokeWidth="1.5" fill="none"/>
@@ -36,98 +38,179 @@ function GradBg() {
 
 export default function Section11({ metier, onRetour, onVoirFormations }) {
   const navigate = useNavigate();
+  const [metierDetails, setMetierDetails] = useState(metier || null);
+  const [loading,        setLoading]       = useState(false);
 
-  const titre = metier?.titre || "Ingénieur en informatique";
-  const mention = metier?.mention || "Informatique";
-  const parcours = metier?.parcours || [
-    "Bac scientifique ou technique (Série C, D ou Technique)",
-    "Licence en Informatique – Université d'Antananarivo (ESPA) ou Université de Fianarantsoa",
-    "Master / Diplôme d'Ingénieur – ESPA Antananarivo, IST Antananarivo ou EMIT",
-  ];
 
-  const metierCompatible = {
-    id: metier?.id || "ingenieur-info",
-    label: titre,
-    mention: mention,
-    description: metier?.description || "",
-    parcours: parcours,
-    profil: [],
+  useEffect(() => {
+    if (!metier) return;
+
+    const loadDetails = async () => {
+      if (metier.parcoursFormation?.length > 0) {
+        setMetierDetails(metier);
+        return;
+      }
+
+      if (metier.id && typeof metier.id === "number") {
+        setLoading(true);
+        try {
+          const details = await getMetierById(metier.id);
+          setMetierDetails(details);
+        } catch (err) {
+          console.error("Erreur chargement détails métier:", err);
+    
+          setMetierDetails(metier);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setMetierDetails(metier);
+      }
+    };
+
+    loadDetails();
+  }, [metier?.id]);
+
+  const m = metierDetails;
+
+  const parcours =
+    m?.parcoursFormation?.length > 0
+      ? m.parcoursFormation
+      : m?.parcours?.length > 0
+      ? m.parcours
+      : ["Aucun parcours disponible pour ce métier."];
+
+  const handleVoirFormations = () => {
+    if (!m) return;
+    onVoirFormations?.({
+      id:          m.id,
+      label:       m.label,
+      mention:     m.mention,
+      niveau:      m.niveau,
+      description: m.description,
+      serie:       m.serie       || null,
+      parcours:    m.parcours    || null,
+      categorie:   m.categorie   || null,
+    });
   };
+
+  if (loading) {
+    return (
+      <div className="relative w-full h-screen font-['Sora'] overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
+        <GradBg />
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center px-8">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-4 border-white/20" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-white animate-spin" />
+          </div>
+          <p className="text-white font-black text-xl">Chargement du parcours…</p>
+          <p className="text-white/60 text-sm">{metier?.label}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen font-['Sora'] overflow-hidden flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
-      <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
       <GradBg />
 
-      {/* Conteneur principal avec padding et hauteur pleine */}
       <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
 
-        {/* Back button aligné à gauche */}
-        <button 
-          onClick={onRetour} 
-          className="self-start text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center" 
+        {/* Retour */}
+        <button
+          onClick={onRetour}
+          className="self-start shrink-0 text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center"
           aria-label="Retour"
         >
           <IoArrowBackCircleOutline size={38} />
         </button>
 
-        {/* Zone de contenu scrollable */}
-        <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
-          {/* Badge aligné à gauche */}
-          <span className="inline-block self-start text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mt-3 mb-2" style={{ background: "rgba(255,255,255,0.18)", color: "white" }}>
+        {/* Zone scrollable */}
+        <div className="flex-1 min-h-0 overflow-y-auto py-2 scrollbar-hide">
+
+          {/* Badge */}
+          <span
+            className="inline-block text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mt-2 mb-2"
+            style={{ background: "rgba(255,255,255,0.18)", color: "white" }}
+          >
             Parcours de formation
           </span>
 
-          {/* Titre principal aligné à gauche - taille comme section 7 */}
-          <h1 className="self-start text-5xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-1">
+          {/* ✅ Titre dynamique selon le métier sélectionné en Section10 */}
+          <h1 className="text-5xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-1">
             Devenir
           </h1>
-          
-          {/* Sous-titre aligné à gauche - taille adaptée */}
-          <h2 className="self-start text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-4 break-words" style={{ color: "rgba(255,255,255,0.9)" }}>
-            {titre}
+          <h2
+            className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-3 break-words"
+            style={{ color: "rgba(255,255,255,0.9)" }}
+          >
+            {m?.label || "—"}
           </h2>
 
-          {/* Mention badge aligné à gauche */}
-          <span className="inline-block self-start bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-5">
-            {mention}
+          {/* Badge mention */}
+          <span className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-5">
+            {m?.mention || "—"}
           </span>
 
-          {/* Conteneur centré pour les étapes */}
+          {/* Badge niveau */}
+          {m?.niveau && (
+            <span className="inline-block bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full mb-5 ml-2">
+              {m.niveau}
+            </span>
+          )}
+
+          {/* ✅ Étapes du parcours — depuis parcoursFormation BDD */}
           <div className="flex flex-col items-center w-full">
-            {/* Étapes - avec largeur maximale contrôlée */}
             <div className="w-full max-w-2xl flex flex-col gap-0 mb-6">
               {parcours.map((etape, i) => (
                 <div key={i} className="flex items-stretch gap-4">
+
+                  {/* Numéro + ligne verticale */}
                   <div className="flex flex-col items-center flex-shrink-0">
                     <div
                       className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 z-10"
                       style={{
                         background: i === parcours.length - 1 ? "white" : "rgba(255,255,255,0.25)",
-                        color: i === parcours.length - 1 ? "#1250c8" : "white",
-                        border: "2px solid rgba(255,255,255,0.6)",
+                        color:      i === parcours.length - 1 ? "#1250c8" : "white",
+                        border:     "2px solid rgba(255,255,255,0.6)",
                       }}
                     >
                       {i + 1}
                     </div>
                     {i < parcours.length - 1 && (
-                      <div className="w-0.5 flex-1 my-1" style={{ background: "rgba(255,255,255,0.3)", minHeight: "20px" }} />
+                      <div
+                        className="w-0.5 flex-1 my-1"
+                        style={{ background: "rgba(255,255,255,0.3)", minHeight: "20px" }}
+                      />
                     )}
                   </div>
 
+                  {/* Contenu de l'étape */}
                   <div
                     className="flex-1 rounded-2xl px-4 py-3"
                     style={{
-                      background: i === parcours.length - 1 ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)",
-                      border: i === parcours.length - 1 ? "1px solid rgba(255,255,255,0.45)" : "1px solid rgba(255,255,255,0.18)",
+                      background: i === parcours.length - 1
+                        ? "rgba(255,255,255,0.20)"
+                        : "rgba(255,255,255,0.10)",
+                      border: i === parcours.length - 1
+                        ? "1px solid rgba(255,255,255,0.45)"
+                        : "1px solid rgba(255,255,255,0.18)",
                       marginBottom: i < parcours.length - 1 ? "8px" : "0",
                     }}
                   >
-                    <p className="text-sm sm:text-base font-semibold text-white leading-snug break-words">{etape}</p>
+                    <p className="text-sm sm:text-base font-semibold text-white leading-snug break-words">
+                      {etape}
+                    </p>
                     {i === parcours.length - 1 && (
                       <div className="flex items-center gap-1 mt-1">
                         <FiCheckCircle size={12} style={{ color: "#a0d820" }} />
-                        <span className="text-[11px] font-semibold" style={{ color: "#a0d820" }}>Objectif final</span>
+                        <span className="text-[11px] font-semibold" style={{ color: "#a0d820" }}>
+                          Objectif final
+                        </span>
                       </div>
                     )}
                   </div>
@@ -137,35 +220,31 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
           </div>
         </div>
 
-        {/* Zone fixe en bas pour le bouton et l'icône home */}
-        <div className="flex flex-col items-center gap-4 mt-4">
-          {/* Bouton fixe */}
+        {/* Boutons bas */}
+        <div className="shrink-0 flex flex-col items-center gap-4 pt-3">
+          {/* ✅ Bouton → Section5 (carte avec établissements) */}
           <button
-            onClick={() => onVoirFormations?.(metierCompatible)}
-            className="w-full max-w-xs py-4 rounded-full font-bold text-sm transition-all inline-flex items-center justify-center gap-2 bg-[#1a3ea8] hover:bg-[#122d88] text-white shadow-lg hover:shadow-xl"
+            onClick={handleVoirFormations}
+            className="w-full max-w-xs py-4 rounded-full font-bold text-sm transition-all inline-flex items-center justify-center gap-2 bg-[#1a3ea8] hover:bg-[#122d88] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
             Voir l'établissement
             <FiArrowRight size={16} />
           </button>
 
-          {/* Home fixe */}
-          <div className="flex justify-center py-2">
-            <button onClick={() => navigate("/acceuil/orientation")} className="text-white hover:text-white/80 transition-colors" aria-label="Accueil">
-              <HiOutlineHome size={30} />
-            </button>
-          </div>
+          {/* Home */}
+          <button
+            onClick={() => navigate("/acceuil/orientation")}
+            className="text-white hover:text-white/80 transition-colors"
+            aria-label="Accueil"
+          >
+            <HiOutlineHome size={30} />
+          </button>
         </div>
       </div>
 
-      {/* Style pour cacher la scrollbar tout en gardant le défilement */}
       <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   );

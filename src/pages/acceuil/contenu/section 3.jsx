@@ -1,46 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome, HiOutlineArrowRight } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { getAllMetiers, getMetierById } from "../../../services/metier.services";
+import { findMetierBySlug }  from "../../../utils/slug";
 
-export const METIERS_LIST = [
-  { id: "architecte",      label: "Architecte",                              mention: "Architecture & Urbanisme",   niveau: "Bac + 5", description: "L'architecte conçoit et supervise la construction de bâtiments et d'espaces urbains fonctionnels et esthétiques.", parcours: ["Architecture", "Génie civil", "Design urbain", "BTP"], profil: ["Série C", "Série D", "Série technique"] },
-  { id: "avocat",          label: "Avocat / Juriste",                        mention: "Droit",                      niveau: "Bac + 5", description: "L'avocat défend les intérêts de ses clients devant les juridictions et conseille sur les questions juridiques.", parcours: ["Droit privé", "Droit public", "Droit des affaires", "Criminologie"], profil: ["Série A", "Série B"] },
-  { id: "data-analyst",    label: "Data analyst / Data scientist",           mention: "Informatique & Data",        niveau: "Bac + 5", description: "Le data analyst analyse et interprète de grandes quantités de données pour aider à la prise de décisions stratégiques.", parcours: ["Statistiques", "Informatique", "Intelligence artificielle", "Big Data"], profil: ["Série C", "Série D"] },
-  { id: "designer",        label: "Designer graphique",                      mention: "Arts & Design",              niveau: "Bac + 3", description: "Le designer graphique crée des visuels, logos, interfaces et supports de communication pour les entreprises.", parcours: ["Arts visuels", "Communication", "Design numérique", "Multimédia"], profil: ["Série A", "Série C"] },
-  { id: "infirmier",       label: "Infirmier / Infirmière",                  mention: "Sciences de la Santé",       niveau: "Bac + 3", description: "L'infirmier prodigue des soins aux patients, assiste les médecins et assure le suivi thérapeutique.", parcours: ["Sciences infirmières", "Santé publique", "Soins médicaux"], profil: ["Série C", "Série D"] },
-  { id: "ingenieur-civil", label: "Ingénieur civil",                         mention: "Génie Civil",                niveau: "Bac + 5", description: "L'ingénieur civil conçoit et supervise des projets d'infrastructure : routes, ponts, bâtiments.", parcours: ["Génie civil", "BTP", "Environnement", "Hydraulique"], profil: ["Série C", "Série D", "Série technique"] },
-  { id: "ingenieur-info",  label: "Ingénieur en informatique",               mention: "Informatique",               niveau: "Bac + 5", description: "L'ingénieur informatique conçoit, développe et maintient des solutions logicielles et numériques répondant aux besoins des entreprises et de la société.", parcours: ["Génie logiciel", "Informatique générale", "Systèmes et réseaux", "Intelligence artificielle"], profil: ["Série C", "Série D", "Série technique"] },
-  { id: "marketing",       label: "Marketing digital / Community manager",   mention: "Marketing & Communication",  niveau: "Bac + 3", description: "Le marketeur digital gère la présence en ligne des marques et pilote les stratégies de communication numérique.", parcours: ["Marketing", "Communication", "Commerce", "Numérique"], profil: ["Série A", "Série B", "Série C"] },
-  { id: "medecin",         label: "Médecin",                                 mention: "Médecine",                   niveau: "Bac + 7", description: "Le médecin diagnostique et traite les maladies, prescrit des traitements et assure le suivi de la santé des patients.", parcours: ["Médecine générale", "Chirurgie", "Pédiatrie", "Spécialités médicales"], profil: ["Série C", "Série D"] },
-  { id: "pilote",          label: "Pilote de ligne",                         mention: "Aéronautique",               niveau: "Bac + 3", description: "Le pilote de ligne conduit des avions commerciaux pour le transport de passagers et de marchandises.", parcours: ["Aéronautique", "Navigation aérienne", "Météorologie"], profil: ["Série C", "Série D"] },
-  { id: "pharmacien",      label: "Pharmacien",                              mention: "Pharmacie",                  niveau: "Bac + 6", description: "Le pharmacien prépare et dispense les médicaments, conseille les patients et veille à la sécurité des traitements.", parcours: ["Pharmacie", "Biochimie", "Chimie pharmaceutique"], profil: ["Série C", "Série D"] },
-  { id: "technicien-aero", label: "Technicien aéronautique",                 mention: "Aéronautique & Maintenance", niveau: "Bac + 2", description: "Le technicien aéronautique assure la maintenance, la réparation et le contrôle des aéronefs.", parcours: ["Maintenance aéronautique", "Électronique", "Mécanique"], profil: ["Série C", "Série D", "Série technique"] },
-];
-
-const DEFAULT_METIER = METIERS_LIST.find((m) => m.id === "ingenieur-info");
-
-const getFormationParcours = (metier) => {
-  const parcoursMap = {
-    "architecte":      ["Bac scientifique ou technique (Série C, D ou technique)", "Licence en Architecture ou Génie civil", "Master en Architecture ou Diplôme d'Architecte"],
-    "avocat":          ["Bac littéraire (Série A ou B)", "Licence en Droit", "Master en Droit + CAPA (Certificat d'Aptitude à la Profession d'Avocat)"],
-    "data-analyst":    ["Bac scientifique (Série C ou D)", "Licence en Statistiques, Informatique ou Mathématiques", "Master en Data Science ou Big Data"],
-    "designer":        ["Bac littéraire ou artistique (Série A)", "Licence en Arts visuels ou Design", "Master en Design graphique ou numérique"],
-    "infirmier":       ["Bac scientifique (Série C ou D)", "Diplôme d'État d'Infirmier (3 ans)", "Licence ou Master en Sciences infirmières"],
-    "ingenieur-civil": ["Bac scientifique ou technique (Série C, D ou technique)", "Classes préparatoires ou Licence en Génie civil", "Diplôme d'Ingénieur en Génie civil"],
-    "ingenieur-info":  ["Bac scientifique ou technique", "Licence en Informatique", "Master ou diplôme d'ingénieur en Informatique"],
-    "marketing":       ["Bac toutes séries", "Licence en Marketing, Communication ou Commerce", "Master en Marketing digital ou Management"],
-    "medecin":         ["Bac scientifique (Série C ou D)", "Première année commune aux études de santé (PACES)", "Diplôme de Docteur en Médecine (9 à 11 ans)"],
-    "pilote":          ["Bac scientifique (Série C ou D)", "Formation théorique de pilote", "Licence de pilote professionnel + qualifications"],
-    "pharmacien":      ["Bac scientifique (Série C ou D)", "Première année commune aux études de santé (PACES)", "Diplôme de Docteur en Pharmacie (6 ans)"],
-    "technicien-aero": ["Bac technique ou scientifique", "BTS ou DUT en Maintenance aéronautique", "Licence professionnelle en Aéronautique"],
-  };
-  return parcoursMap[metier?.id] || parcoursMap["ingenieur-info"];
-};
-
-// ── Fiche détaillée métier (colonne droite) ───────────────────────────────────
 function MetierDetailPanel({ metier }) {
   if (!metier) return null;
+  
   return (
     <div className="relative h-full rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 shadow-2xl p-6 xl:p-8 flex flex-col overflow-hidden">
       {/* Titre & badges */}
@@ -62,7 +29,7 @@ function MetierDetailPanel({ metier }) {
           <p className="text-white/95 text-sm leading-relaxed">{metier.description}</p>
         </div>
 
-        {/* Parcours d'études */}
+        {/* Parcours d'études possibles */}
         {metier.parcours?.length > 0 && (
           <div>
             <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-2">Parcours d'études possibles</p>
@@ -77,11 +44,11 @@ function MetierDetailPanel({ metier }) {
         )}
 
         {/* Séries recommandées */}
-        {metier.profil?.length > 0 && (
+        {metier.serie?.length > 0 && (
           <div>
             <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-2">Séries recommandées</p>
             <div className="flex flex-wrap gap-2">
-              {metier.profil.map((p, i) => (
+              {metier.serie.map((p, i) => (
                 <span key={i} className="text-[12px] bg-white/20 border border-white/30 text-white px-3 py-1.5 rounded-full">
                   {p}
                 </span>
@@ -89,33 +56,11 @@ function MetierDetailPanel({ metier }) {
             </div>
           </div>
         )}
-
-        {/* Débouchés (infos additionnelles visuelles) */}
-        <div className="bg-white/10 rounded-2xl p-4 border border-white/15">
-          <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-2">Pourquoi ce métier ?</p>
-          <ul className="space-y-2">
-            <li className="flex items-start gap-2">
-              <span className="text-white/60 mt-0.5">✦</span>
-              <span className="text-white/90 text-sm">Métier en forte demande sur le marché du travail</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-white/60 mt-0.5">✦</span>
-              <span className="text-white/90 text-sm">Nombreuses opportunités à l'échelle nationale et internationale</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-white/60 mt-0.5">✦</span>
-              <span className="text-white/90 text-sm">Évolution de carrière variée selon la spécialisation</span>
-            </li>
-          </ul>
-        </div>
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SVG Déco commun
-// ─────────────────────────────────────────────────────────────────────────────
 function DecoSVG() {
   return (
     <>
@@ -160,17 +105,76 @@ function DecoSVG() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section3 principal
-// ─────────────────────────────────────────────────────────────────────────────
-export default function Section3({ metier = DEFAULT_METIER, onRetour, onVoirCarte }) {
+export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, onMetierLoaded }) {
   const navigate = useNavigate();
   const [selectedMetier, setSelectedMetier] = useState(metier);
+  const [loading, setLoading] = useState(false);
+  
+  useEffect(() => {
+    setSelectedMetier(metier);
+  }, [metier]);
+
+  useEffect(() => {
+    const loadMetierDetails = async () => {
+      // Cas 1 : déjà tout chargé
+      if (metier?.parcoursFormation?.length > 0) {
+        setSelectedMetier(metier);
+        return;
+      }
+
+      // Cas 2 : on a l'ID → charger les détails complets
+      if (metier?.id && typeof metier.id === "number") {
+        setLoading(true);
+        try {
+          const details = await getMetierById(metier.id);
+          setSelectedMetier(details);
+          onMetierLoaded?.(details);
+        } catch (error) {
+          console.error("Erreur chargement détails métier:", error);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+
+      // Cas 3 : pas d'état en mémoire mais on a un slug URL (refresh / lien direct)
+      if (slugFromUrl) {
+        setLoading(true);
+        try {
+          const allMetiers = await getAllMetiers();
+          const found = findMetierBySlug(slugFromUrl, allMetiers);
+          if (found) {
+            const details = await getMetierById(found.id);
+            setSelectedMetier(details);
+            onMetierLoaded?.(details); // remonter l'état dans acceuil.jsx
+          }
+        } catch (error) {
+          console.error("Erreur chargement métier par slug:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadMetierDetails();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metier?.id, slugFromUrl]);
+
   const m = selectedMetier;
-  const formationParcours = getFormationParcours(m);
   const isMultipleResults = metier?.isDomaine && metier?.results?.length > 0;
 
-  // ── Vue liste de résultats (domaine) ──────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="relative w-full h-screen overflow-hidden font-['Sora'] flex items-center justify-center bg-gradient-to-br from-[#1550cc] via-[#1e72d8] via-[#30b8a4] to-[#9ed418]">
+        <div className="text-white text-center">
+          <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-semibold">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+ 
   if (isMultipleResults) {
     return (
       <div className="relative w-full h-screen overflow-hidden font-['Sora'] flex bg-gradient-to-br from-[#1550cc] via-[#1e72d8] via-[#30b8a4] via-[#7dc922] to-[#9ed418]">
@@ -218,7 +222,7 @@ export default function Section3({ metier = DEFAULT_METIER, onRetour, onVoirCart
           {/* Boutons bas */}
           <div className="shrink-0 pt-3 flex flex-col items-center gap-3">
             <button
-              onClick={onVoirCarte}
+              onClick={() => onVoirCarte(selectedMetier || metier.results[0])}
               className="w-full max-w-sm bg-[#52ad1f] hover:bg-[#469c18] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
             >
               <span className="text-sm">Établissements proposant ce parcours</span>
@@ -245,7 +249,7 @@ export default function Section3({ metier = DEFAULT_METIER, onRetour, onVoirCart
     );
   }
 
-  // ── Vue détail d'un seul métier ────────────────────────────────────────────
+ 
   return (
     <div className="relative w-full h-screen overflow-hidden font-['Sora'] flex bg-gradient-to-br from-[#1550cc] via-[#1e72d8] via-[#30b8a4] via-[#7dc922] to-[#9ed418]">
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -261,49 +265,51 @@ export default function Section3({ metier = DEFAULT_METIER, onRetour, onVoirCart
 
           {/* Titre */}
           <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight mt-3 mb-2">
-            {m.label}
+            {m?.label || "Métier"}
           </h1>
           <div className="inline-block bg-white/90 rounded-full px-4 py-1.5 text-sm font-semibold text-gray-800 mb-5">
-            {m.mention}
+            {m?.mention || "Formation"}
           </div>
 
-          {/* Bloc parcours de formation */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/15">
-            <h2 className="text-white font-black text-base uppercase tracking-wide mb-4">
-              Parcours de formation
-            </h2>
+          {/* Bloc parcours de formation - Utilise parcoursFormation de la base de données */}
+          {m?.parcoursFormation && m.parcoursFormation.length > 0 && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/15">
+              <h2 className="text-white font-black text-base uppercase tracking-wide mb-4">
+                Parcours de formation
+              </h2>
 
-            <div className="space-y-4">
-              {formationParcours.map((etape, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  {/* Numéro + ligne verticale */}
-                  <div className="flex flex-col items-center shrink-0">
-                    <div className="w-8 h-8 bg-white/25 border border-white/40 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-black">{index + 1}</span>
+              <div className="space-y-4">
+                {m.parcoursFormation.map((etape, index) => (
+                  <div key={index} className="flex items-start gap-4">
+                    {/* Numéro + ligne verticale */}
+                    <div className="flex flex-col items-center shrink-0">
+                      <div className="w-8 h-8 bg-white/25 border border-white/40 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-black">{index + 1}</span>
+                      </div>
+                      {index < m.parcoursFormation.length - 1 && (
+                        <div className="w-px flex-1 min-h-[20px] bg-white/20 mt-1.5" />
+                      )}
                     </div>
-                    {index < formationParcours.length - 1 && (
-                      <div className="w-px flex-1 min-h-[20px] bg-white/20 mt-1.5" />
-                    )}
+                    {/* Texte de l'étape */}
+                    <div className="pb-4">
+                      <p className="text-white/95 text-sm leading-relaxed pt-1">{etape}</p>
+                    </div>
                   </div>
-                  {/* Texte de l'étape */}
-                  <div className="pb-4">
-                    <p className="text-white/95 text-sm leading-relaxed pt-1">{etape}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Sur mobile : affiche la fiche détail en dessous */}
           <div className="lg:hidden mt-5">
-            <MetierDetailPanel metier={m} />
+            {m && <MetierDetailPanel metier={m} />}
           </div>
         </div>
 
         {/* Boutons bas */}
         <div className="shrink-0 pt-3 flex flex-col items-center gap-3">
           <button
-            onClick={onVoirCarte}
+            onClick={() => onVoirCarte(m)}
             className="w-full max-w-sm bg-[#52ad1f] hover:bg-[#469c18] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
           >
             <span className="text-sm">Établissements proposant ce parcours</span>
@@ -317,7 +323,7 @@ export default function Section3({ metier = DEFAULT_METIER, onRetour, onVoirCart
 
       {/* ── Colonne droite : Fiche détaillée du métier ── */}
       <div className="hidden lg:flex relative z-10 flex-1 px-8 xl:px-12 py-10 h-full">
-        <MetierDetailPanel metier={m} />
+        {m && <MetierDetailPanel metier={m} />}
       </div>
 
       <style>{`

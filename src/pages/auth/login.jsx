@@ -1,11 +1,14 @@
-// src/pages/auth/login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { login as loginService } from "../../services/auth.services";
+import { useAuth } from "../../App"; 
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth(); 
+  
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -14,16 +17,18 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   const handleForgotPassword = () => {
-    toast.info("Veuillez contacter l'administrateur pour réinitialiser votre mot de passe", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "colored",
-    });
+    toast.info(
+      "Veuillez contacter l'administrateur pour réinitialiser votre mot de passe",
+      {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      }
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -31,7 +36,6 @@ const Login = () => {
     setLoading(true);
     setErrors({});
 
-    // Validation simple
     if (!identifier.trim() || !password.trim()) {
       setErrors({ general: "Veuillez remplir tous les champs" });
       setLoading(false);
@@ -39,39 +43,64 @@ const Login = () => {
     }
 
     try {
-      // Simulation de connexion (à remplacer par votre logique d'authentification)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await loginService(identifier, password, rememberMe);
       
-      // Simuler une connexion réussie
-      if (identifier && password) {
-        toast.success("Connexion réussie ! Redirection en cours...", {
+      const { utilisateur, token } = response;
+      
+      authLogin(token, utilisateur.role, rememberMe, utilisateur);
+
+      toast.success(
+        `Bienvenue ${utilisateur.prenom} ${utilisateur.nom} !`,
+        {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          progress: undefined,
+          theme: "colored",
+        }
+      );
+
+      setTimeout(() => {
+        if (utilisateur.role === "admin") {
+          navigate("/dashboard/admin", { replace: true });
+        } else {
+          navigate("/acceuil", { replace: true });
+        }
+      }, 2000);
+
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        "Erreur de connexion. Veuillez réessayer.";
+
+      if (error.response?.status === 401) {
+        setErrors({ general: message });
+        toast.error(message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
           theme: "colored",
         });
-        
-        setTimeout(() => {
-          navigate("/dashboard/admin", { replace: true });
-        }, 2000);
+      } else if (error.response?.status === 422) {
+        setErrors({ general: "Veuillez remplir tous les champs correctement." });
+        toast.warning("Champs manquants ou invalides.", {
+          position: "top-right",
+          autoClose: 5000,
+          theme: "colored",
+        });
+      } else {
+        setErrors({ general: "Erreur serveur. Réessayez plus tard." });
+        toast.error("Erreur serveur. Réessayez plus tard.", {
+          position: "top-right",
+          autoClose: 5000,
+          theme: "colored",
+        });
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      toast.error("Erreur de connexion. Veuillez réessayer.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-      setErrors({ general: "Identifiants incorrects" });
     } finally {
       setLoading(false);
     }
@@ -91,11 +120,10 @@ const Login = () => {
         pauseOnHover
         theme="colored"
       />
-      
+
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        {/* Conteneur principal avec bordure grise */}
         <div className="relative bg-white w-full max-w-md rounded-2xl border border-gray-200 animate-fade-in-up mx-auto flex flex-col transition-all duration-300 shadow-lg">
-          
+
           {/* Header */}
           <div className="px-8 pt-8 pb-4 text-center mb-2">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full mb-4 shadow-md shadow-blue-500/30">
@@ -123,7 +151,7 @@ const Login = () => {
 
           {/* Formulaire */}
           <div className="flex-1 px-8 pb-8">
-            
+
             {/* Bannière erreur générale */}
             {errors.general && (
               <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-xs font-medium text-center animate-shake flex items-center justify-center gap-2">
@@ -143,7 +171,7 @@ const Login = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              
+
               {/* Email ou Nom d'utilisateur */}
               <div className="relative group">
                 <input
@@ -155,11 +183,11 @@ const Login = () => {
                   placeholder=" "
                   required
                 />
-                <label 
-                  htmlFor="identifier" 
+                <label
+                  htmlFor="identifier"
                   className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
-                  E-mail ou nom d'utilisateur
+                  E-mail ou nom d&apos;utilisateur
                 </label>
               </div>
 
@@ -174,14 +202,14 @@ const Login = () => {
                   placeholder=" "
                   required
                 />
-                <label 
-                  htmlFor="password" 
+                <label
+                  htmlFor="password"
                   className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Mot de passe
                 </label>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
                   tabIndex="-1"
@@ -202,17 +230,17 @@ const Login = () => {
               {/* Remember me et Mot de passe oublié */}
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center space-x-2 cursor-pointer group">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
+                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="text-xs text-gray-600 group-hover:text-gray-900 transition-colors">
                     Rester connecté
                   </span>
                 </label>
-                <button 
+                <button
                   type="button"
                   onClick={handleForgotPassword}
                   className="text-xs text-blue-600 hover:text-blue-700 font-semibold transition-colors"
@@ -244,20 +272,20 @@ const Login = () => {
                 href="/"
                 className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
               >
-                Retour à l'accueil
+                Retour à l&apos;accueil
               </a>
             </div>
           </div>
         </div>
 
         {/* Styles CSS pour les animations */}
-        <style jsx>{`
+        <style>{`
           @keyframes fade-in-up {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
           }
           .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
-          
+
           @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-3px); }

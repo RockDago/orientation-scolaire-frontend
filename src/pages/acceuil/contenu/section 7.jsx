@@ -104,7 +104,7 @@ export default function Section7({ onSuivant, onRetour }) {
         </div>
 
         {/* Zone fixe en bas pour le bouton et l'icône home */}
-        <div className="flex flex-col items-start gap-4 mt-4">
+  <div className="shrink-0 flex flex-col items-start gap-4 pt-4">
           {/* Bouton Suivant aligné à gauche */}
           <button
             onClick={handleSuivant}
