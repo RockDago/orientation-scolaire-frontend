@@ -28,22 +28,12 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Deploy to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: 📂 Sync files via FTP
+        uses: kevinpainchaud/simple-ftp-deploy-action@v1.2.1
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: /
-          
-          create-directories: true
-          
-          exclude: |
-            **/backend*/**
-            **/*.php
-            **/.git*
-            **/node_modules/**
-            **/*.log
-            
-          dry-run: false
+          ftp_host: ${{ secrets.FTP_HOST }}
+          ftp_username: ${{ secrets.FTP_USER }}
+          ftp_password: ${{ secrets.FTP_PASSWORD }}
+          local_source_dir: "./dist"
+          dist_target_dir: "/"
+          delete: "false"
