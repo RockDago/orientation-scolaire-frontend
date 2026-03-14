@@ -17,7 +17,14 @@ import {
   FaLock,
   FaSave,
   FaUserCircle,
+  FaTimes,
+  FaExclamationTriangle,
 } from "react-icons/fa";
+import { 
+  Download, FileSpreadsheet, FileText,
+  ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
+  X
+} from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -25,6 +32,109 @@ import {
   updateProfile,
   getLocalUser,
 } from "../../../services/profile.services";
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+const TONES = {
+  gray:   "bg-gray-100 text-gray-600",
+  blue:   "bg-blue-50  text-blue-700",
+  green:  "bg-green-50  text-green-700",
+  red:    "bg-red-50    text-red-700",
+  orange: "bg-orange-50 text-orange-700",
+  purple: "bg-purple-50 text-purple-700",
+};
+
+const Pill = ({ children, tone = "gray" }) => (
+  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TONES[tone]}`}>
+    {children}
+  </span>
+);
+
+// ── FloatInput (version animée) avec astérisque rouge ─────────────────────────
+const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows }) => {
+  const InputComponent = type === "textarea" ? "textarea" : "input";
+  
+  return (
+    <div className="relative">
+      <InputComponent
+        type={type !== "textarea" ? type : undefined}
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        min={min}
+        maxLength={maxLength}
+        rows={rows}
+        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
+          ${error ? "border-red-500" : "border-gray-300 focus:border-blue-600"}
+          ${disabled ? "bg-gray-50 cursor-not-allowed" : ""} ${className}`}
+        placeholder=" "
+      />
+      <label
+        htmlFor={id}
+        className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5
+          peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4
+          ${error ? "text-red-500" : "text-gray-500 peer-focus:text-blue-600"}`}
+      >
+        {label.includes('*') ? (
+          <>
+            {label.replace('*', '')}
+            <span className="text-red-500 ml-0.5">*</span>
+          </>
+        ) : label}
+      </label>
+      {error && <p className="text-[10px] text-red-500 absolute -bottom-5 left-0">{error}</p>}
+    </div>
+  );
+};
+
+// ── BtnPrimary avec le même style que les autres vues ─────────────────────────
+const BtnPrimary = ({ onClick, children, loading, disabled, type = "button", icon: Icon }) => (
+  <button 
+    type={type}
+    onClick={onClick} 
+    disabled={disabled || loading}
+    className={`px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-semibold shadow-md hover:brightness-110 transition-colors flex items-center justify-center gap-2 ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+  >
+    {loading ? (
+      <>
+        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        <span>Chargement...</span>
+      </>
+    ) : (
+      <>
+        {Icon && <Icon size={15} className="text-white" />}
+        {children}
+      </>
+    )}
+  </button>
+);
+
+const BtnSecondary = ({ onClick, children, disabled, type = "button" }) => (
+  <button 
+    type={type}
+    onClick={onClick} 
+    disabled={disabled}
+    className={`px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 text-xs sm:text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+  >
+    {children}
+  </button>
+);
+
+const BtnEdit = ({ onClick, children, isEditing }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`text-xs sm:text-sm font-medium flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg transition-colors ${
+      isEditing 
+        ? "text-red-600 hover:bg-red-50" 
+        : "text-blue-600 hover:bg-blue-50"
+    }`}
+  >
+    {isEditing ? <FaTimes size={12} /> : <FaEdit size={12} />}
+    {children}
+  </button>
+);
 
 const ProfileView = () => {
   const [userData, setUserData] = useState(null);
@@ -94,7 +204,7 @@ const ProfileView = () => {
   };
 
   const tabs = [
-    { key: "personal", label: "Informations" },
+    { key: "personal", label: "Informations personnelles" },
     { key: "security", label: "Sécurité" },
   ];
 
@@ -118,12 +228,13 @@ const ProfileView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans">
+    <div className="min-h-screen bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
       <ToastContainer />
 
-      <div className="max-w-5xl mx-auto p-6">
+      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
+
         {/* En-tête du profil */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-5">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
           <div className="flex items-center gap-5 flex-wrap">
             {/* Avatar avec upload */}
             <div
@@ -161,13 +272,11 @@ const ProfileView = () => {
 
             {/* Informations utilisateur */}
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <h1 className="text-xl font-bold text-gray-900 m-0">
                   {userData.prenom} {userData.nom}
                 </h1>
-                <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium ml-2">
-                  {userData.role}
-                </span>
+                <Pill tone="blue">{userData.role}</Pill>
               </div>
 
               <div className="flex items-center gap-1.5 mb-2">
@@ -194,7 +303,7 @@ const ProfileView = () => {
 
             {/* Badge email vérifié */}
             <div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/10 text-green-600">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/10 text-green-600 border border-green-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-current" />
                 Vérifié
               </div>
@@ -203,7 +312,7 @@ const ProfileView = () => {
         </div>
 
         {/* Carte principale avec onglets */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           {/* Navigation par onglets */}
           <div className="flex border-b border-gray-200 px-5 bg-white">
             {tabs.map((tab) => (
@@ -321,32 +430,30 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
   };
 
   return (
-    <>
+    <div className="space-y-6">
       {/* Section Informations personnelles */}
       <form onSubmit={handleSubmitInfo}>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-5">
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-base font-semibold text-gray-900 m-0">
               Informations personnelles
             </h3>
-            <button
-              type="button"
-              className="text-blue-600 text-sm font-medium flex items-center gap-1.5 cursor-pointer px-2 py-1 rounded-md hover:bg-blue-50 transition-colors"
+            <BtnEdit
               onClick={() => {
                 setEditInfo(!editInfo);
                 setErrors({});
               }}
+              isEditing={editInfo}
             >
-              <FaEdit size={12} />
               {editInfo ? "Annuler" : "Modifier"}
-            </button>
+            </BtnEdit>
           </div>
 
           {!editInfo ? (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
               <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium uppercase tracking-wider">
-                  Nom d&apos;utilisateur
+                  Nom d'utilisateur
                 </label>
                 <span className="text-sm text-gray-700 font-medium flex items-center gap-1">
                   <FaUserCircle className="text-gray-400" size={12} />
@@ -359,7 +466,7 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
                 </label>
                 <span className="text-sm text-gray-700 font-medium flex items-center gap-1">
                   <FaUserTag className="text-gray-400" size={12} />
-                  {userData.role || "—"}
+                  <Pill tone="blue">{userData.role || "—"}</Pill>
                 </span>
               </div>
               <div>
@@ -396,145 +503,79 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-4">
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
-                  Nom d&apos;utilisateur *
-                </label>
-                <div className="relative">
-                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                    <FaUserCircle size={14} />
-                  </div>
-                  <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    className={`w-full p-2.5 pl-8 bg-white border rounded-lg text-sm text-gray-900 transition-all duration-200 ${
-                      errors.username ? "border-red-500" : "border-gray-200"
-                    }`}
-                    placeholder="nom_utilisateur"
-                  />
-                </div>
-                {errors.username && (
-                  <div className="text-[11px] text-red-500 mt-1">
-                    {errors.username}
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5 mb-4">
+              <FloatInput
+                id="username"
+                name="username"
+                label="Nom d'utilisateur *"
+                value={formData.username}
+                onChange={handleInputChange}
+                error={errors.username}
+              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="role"
+                  value={formData.role}
+                  className="block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-gray-50 border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 peer cursor-not-allowed"
+                  disabled
+                  placeholder=" "
+                />
+                <label className="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 text-gray-500">
                   Rôle
                 </label>
-                <div className="relative">
-                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                    <FaUserTag size={14} />
-                  </div>
-                  <input
-                    type="text"
-                    name="role"
-                    value={formData.role}
-                    className="w-full p-2.5 pl-8 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-700 cursor-not-allowed"
-                    disabled
-                  />
-                </div>
-                <div className="text-[11px] text-gray-400 mt-1">
-                  Non modifiable
-                </div>
               </div>
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
-                  Nom *
-                </label>
-                <input
-                  type="text"
-                  name="nom"
-                  value={formData.nom}
-                  onChange={handleInputChange}
-                  className={`w-full p-2.5 bg-white border rounded-lg text-sm text-gray-900 transition-all duration-200 ${
-                    errors.nom ? "border-red-500" : "border-gray-200"
-                  }`}
-                  placeholder="Ex: Rakoto"
-                />
-                {errors.nom && (
-                  <div className="text-[11px] text-red-500 mt-1">
-                    {errors.nom}
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
-                  Prénom *
-                </label>
-                <input
-                  type="text"
-                  name="prenom"
-                  value={formData.prenom}
-                  onChange={handleInputChange}
-                  className={`w-full p-2.5 bg-white border rounded-lg text-sm text-gray-900 transition-all duration-200 ${
-                    errors.prenom ? "border-red-500" : "border-gray-200"
-                  }`}
-                  placeholder="Ex: Jean"
-                />
-                {errors.prenom && (
-                  <div className="text-[11px] text-red-500 mt-1">
-                    {errors.prenom}
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
-                  Adresse
-                </label>
-                <input
-                  type="text"
-                  name="adresse"
-                  value={formData.adresse}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 transition-all duration-200"
-                  placeholder="123 Rue Exemple, Antananarivo"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
-                  Code postal
-                </label>
-                <input
-                  type="text"
-                  name="code_postal"
-                  value={formData.code_postal}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 transition-all duration-200"
-                  placeholder="101"
-                />
-              </div>
+              <FloatInput
+                id="nom"
+                name="nom"
+                label="Nom *"
+                value={formData.nom}
+                onChange={handleInputChange}
+                error={errors.nom}
+              />
+              <FloatInput
+                id="prenom"
+                name="prenom"
+                label="Prénom *"
+                value={formData.prenom}
+                onChange={handleInputChange}
+                error={errors.prenom}
+              />
+              <FloatInput
+                id="adresse"
+                name="adresse"
+                label="Adresse"
+                value={formData.adresse}
+                onChange={handleInputChange}
+              />
+              <FloatInput
+                id="code_postal"
+                name="code_postal"
+                label="Code postal"
+                value={formData.code_postal}
+                onChange={handleInputChange}
+              />
             </div>
           )}
 
           {editInfo && (
             <div className="flex justify-end gap-2.5 mt-5">
-              <button
-                type="button"
-                className="px-5 py-2.5 bg-transparent text-gray-500 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-gray-600 transition-all"
+              <BtnSecondary
                 onClick={() => {
                   setEditInfo(false);
                   setErrors({});
                 }}
               >
                 Annuler
-              </button>
-              <button
+              </BtnSecondary>
+              <BtnPrimary
                 type="submit"
+                loading={loadingInfo}
                 disabled={loadingInfo}
-                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                icon={FaSave}
               >
-                {loadingInfo ? (
-                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <FaSave size={12} />
-                )}
                 Enregistrer
-              </button>
+              </BtnPrimary>
             </div>
           )}
         </div>
@@ -542,129 +583,115 @@ const PersonalInfoForm = ({ userData, setUserData, showToast }) => {
 
       {/* Section Contacts */}
       <form onSubmit={handleSubmitContact}>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-base font-semibold text-gray-900 m-0">
               Contacts
             </h3>
-            <button
-              type="button"
-              className="text-blue-600 text-sm font-medium flex items-center gap-1.5 cursor-pointer px-2 py-1 rounded-md hover:bg-blue-50 transition-colors"
+            <BtnEdit
               onClick={() => {
                 setEditContact(!editContact);
                 setErrors({});
               }}
+              isEditing={editContact}
             >
-              <FaEdit size={12} />
               {editContact ? "Annuler" : "Modifier"}
-            </button>
+            </BtnEdit>
           </div>
 
-          {/* Téléphone */}
-          <div className="flex items-start gap-3 py-3 border-b border-gray-200">
-            <div className="w-9 h-9 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-              <FaPhone className="w-4 h-4 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
-                Téléphone
+          <div className="space-y-4">
+            {/* Téléphone */}
+            <div className="flex items-start gap-3 py-3 border-b border-gray-100">
+              <div className="w-9 h-9 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                <FaPhone className="w-4 h-4 text-blue-600" />
               </div>
-              {editContact ? (
-                <input
-                  type="tel"
-                  name="telephone"
-                  value={formData.telephone}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 transition-all duration-200"
-                  placeholder="034 12 345 67"
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700 font-medium">
-                    {userData.telephone || "—"}
-                  </span>
-                  {userData.telephone && (
+              <div className="flex-1">
+                <div className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
+                  Téléphone
+                </div>
+                {editContact ? (
+                  <FloatInput
+                    id="telephone"
+                    name="telephone"
+                    label="Téléphone"
+                    value={formData.telephone}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700 font-medium">
+                      {userData.telephone || "—"}
+                    </span>
+                    {userData.telephone && (
+                      <span className="w-[18px] h-[18px] bg-green-600 rounded-full inline-flex items-center justify-center text-white text-[10px]">
+                        <FaCheck size={8} />
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex items-start gap-3 py-3">
+              <div className="w-9 h-9 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                <FaEnvelope className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
+                  Email
+                </div>
+                {editContact ? (
+                  <FloatInput
+                    id="email"
+                    name="email"
+                    label="Email *"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    error={errors.email}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700 font-medium">
+                      {userData.email || "—"}
+                    </span>
                     <span className="w-[18px] h-[18px] bg-green-600 rounded-full inline-flex items-center justify-center text-white text-[10px]">
                       <FaCheck size={8} />
                     </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Email */}
-          <div className="flex items-start gap-3 py-3">
-            <div className="w-9 h-9 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-              <FaEnvelope className="w-4 h-4 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div className="text-[11px] text-gray-500 font-medium uppercase tracking-wider mb-1">
-                Email
+                  </div>
+                )}
               </div>
-              {editContact ? (
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`w-full p-2.5 bg-white border rounded-lg text-sm text-gray-900 transition-all duration-200 ${
-                    errors.email ? "border-red-500" : "border-gray-200"
-                  }`}
-                  placeholder="votre.email@exemple.com"
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700 font-medium">
-                    {userData.email || "—"}
-                  </span>
-                  <span className="w-[18px] h-[18px] bg-green-600 rounded-full inline-flex items-center justify-center text-white text-[10px]">
-                    <FaCheck size={8} />
-                  </span>
-                </div>
-              )}
-              {editContact && errors.email && (
-                <div className="text-[11px] text-red-500 mt-1">
-                  {errors.email}
-                </div>
-              )}
             </div>
           </div>
 
           {editContact && (
             <div className="flex justify-end gap-2.5 mt-5">
-              <button
-                type="button"
-                className="px-5 py-2.5 bg-transparent text-gray-500 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:text-gray-600 transition-all"
+              <BtnSecondary
                 onClick={() => {
                   setEditContact(false);
                   setErrors({});
                 }}
               >
                 Annuler
-              </button>
-              <button
+              </BtnSecondary>
+              <BtnPrimary
                 type="submit"
+                loading={loadingContact}
                 disabled={loadingContact}
-                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                icon={FaSave}
               >
-                {loadingContact ? (
-                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <FaSave size={12} />
-                )}
                 Enregistrer
-              </button>
+              </BtnPrimary>
             </div>
           )}
         </div>
       </form>
-    </>
+    </div>
   );
 };
 
 // ─── Composant Sécurité ───────────────────────────────────────────────────────
-const SecurityForm = ({ userData, showToast }) => {
+const SecurityForm = ({ showToast }) => {
   const [passwords, setPasswords] = useState({
     passwordCurrent: "",
     passwordNew: "",
@@ -734,7 +761,6 @@ const SecurityForm = ({ userData, showToast }) => {
 
     setLoadingPassword(true);
     try {
-      // Import du service ici pour éviter les dépendances circulaires
       const { changePassword } =
         await import("../../../services/profile.services");
       await changePassword(passwords.passwordCurrent, passwords.passwordNew);
@@ -802,169 +828,150 @@ const SecurityForm = ({ userData, showToast }) => {
     }
   };
 
+  const PasswordInput = ({ field, label, visKey }) => (
+    <div className="relative">
+      <input
+        type={showPassword[visKey] ? "text" : "password"}
+        name={field}
+        value={passwords[field]}
+        onChange={handlePasswordChange}
+        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
+          ${errors[field] ? "border-red-500" : "border-gray-300 focus:border-blue-600"}`}
+        placeholder=" "
+      />
+      <label
+        htmlFor={field}
+        className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5
+          peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4
+          ${errors[field] ? "text-red-500" : "text-gray-500 peer-focus:text-blue-600"}`}
+      >
+        {label}
+      </label>
+      <button
+        type="button"
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        onClick={() => togglePasswordVisibility(visKey)}
+      >
+        {showPassword[visKey] ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+      </button>
+      {errors[field] && (
+        <p className="text-[10px] text-red-500 absolute -bottom-5 left-0">{errors[field]}</p>
+      )}
+    </div>
+  );
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Mot de passe */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-5">
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
         <h3 className="text-base font-semibold text-gray-900 mb-4">
           Changer le mot de passe
         </h3>
 
-        {[
-          {
-            field: "passwordCurrent",
-            label: "Mot de passe actuel *",
-            placeholder: "Entrez votre mot de passe actuel",
-            visKey: "current",
-          },
-          {
-            field: "passwordNew",
-            label: "Nouveau mot de passe *",
-            placeholder: "Minimum 8 caractères",
-            visKey: "new",
-          },
-          {
-            field: "passwordConfirm",
-            label: "Confirmer le nouveau mot de passe *",
-            placeholder: "Répétez le nouveau mot de passe",
-            visKey: "confirm",
-          },
-        ].map(({ field, label, placeholder, visKey }) => (
-          <div key={field} className="mb-3.5">
-            <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
-              {label}
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword[visKey] ? "text" : "password"}
-                name={field}
-                value={passwords[field]}
-                onChange={handlePasswordChange}
-                className={`w-full p-2.5 bg-white border rounded-lg text-sm text-gray-900 pr-10 transition-all duration-200 ${
-                  errors[field] ? "border-red-500" : "border-gray-200"
-                }`}
-                placeholder={placeholder}
-              />
-              <button
-                type="button"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 flex items-center"
-                onClick={() => togglePasswordVisibility(visKey)}
-              >
-                {showPassword[visKey] ? (
-                  <FaEyeSlash size={14} />
-                ) : (
-                  <FaEye size={14} />
-                )}
-              </button>
-            </div>
-            {errors[field] && (
-              <div className="text-[11px] text-red-500 mt-1">
-                {errors[field]}
-              </div>
-            )}
-          </div>
-        ))}
+        <div className="space-y-5">
+          <PasswordInput
+            field="passwordCurrent"
+            label="Mot de passe actuel *"
+            placeholder="Entrez votre mot de passe actuel"
+            visKey="current"
+          />
+
+          <PasswordInput
+            field="passwordNew"
+            label="Nouveau mot de passe *"
+            placeholder="Minimum 8 caractères"
+            visKey="new"
+          />
+
+          <PasswordInput
+            field="passwordConfirm"
+            label="Confirmer le nouveau mot de passe *"
+            placeholder="Répétez le nouveau mot de passe"
+            visKey="confirm"
+          />
+        </div>
 
         {/* Critères de sécurité */}
-        <div>
-          <label className="block text-[11px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
+        <div className="mt-5">
+          <label className="block text-[11px] text-gray-500 mb-2 font-medium uppercase tracking-wider">
             Critères de sécurité
           </label>
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="flex flex-wrap gap-2">
             {passwordCriteria.map((item) => {
               const met = passwordValidation[item.key];
               return (
                 <span
                   key={item.key}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium ${
                     met
                       ? "bg-green-500/10 text-green-600 border border-green-500/20"
                       : "bg-gray-50 text-gray-400 border border-gray-200"
                   }`}
                 >
-                  <FaCheck size={8} /> {item.label}
+                  <FaCheck size={7} /> {item.label}
                 </span>
               );
             })}
           </div>
           {passwordsMatch && (
-            <p className="text-[11px] text-green-600 mt-1.5">
-              Les mots de passe correspondent.
+            <p className="text-[11px] text-green-600 mt-2 flex items-center gap-1">
+              <FaCheck size={10} /> Les mots de passe correspondent.
             </p>
           )}
           {passwordsDontMatch && (
-            <p className="text-[11px] text-red-500 mt-1.5">
+            <p className="text-[11px] text-red-500 mt-2">
               Les mots de passe ne correspondent pas.
             </p>
           )}
         </div>
 
-        <div className="flex justify-end mt-4">
-          <button
+        <div className="flex justify-end mt-5">
+          <BtnPrimary
             type="submit"
+            loading={loadingPassword}
             disabled={loadingPassword}
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-1.5 disabled:opacity-50 transition-all"
+            icon={FaLock}
           >
-            {loadingPassword ? (
-              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <FaLock size={12} />
-            )}
             Mettre à jour
-          </button>
+          </BtnPrimary>
         </div>
       </div>
 
       {/* 2FA */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <FaShieldAlt className="w-5 h-5 text-blue-600" />
+            <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+              <FaShieldAlt className="w-4 h-4 text-blue-600" />
+            </div>
             <div>
               <h3 className="text-base font-semibold text-gray-900 m-0">
                 Authentification à deux facteurs
               </h3>
-              <p className="text-xs text-gray-500 mt-2 max-w-[480px]">
+              <p className="text-xs text-gray-500 mt-1 max-w-[480px]">
                 Protégez votre compte en exigeant un code lors de la connexion
                 en plus de votre mot de passe.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold ${
-                twoFactorEnabled
-                  ? "bg-green-500/10 text-green-600"
-                  : "bg-gray-100 text-gray-400"
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+            <Pill tone={twoFactorEnabled ? "green" : "gray"}>
               {twoFactorEnabled ? "Activé" : "Désactivé"}
-            </span>
+            </Pill>
             {twoFactorEnabled ? (
-              <button
-                type="button"
-                onClick={handleDisable2FA}
-                disabled={loading2FA}
-                className="px-5 py-2.5 bg-transparent text-gray-500 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all"
-              >
+              <BtnSecondary onClick={handleDisable2FA} disabled={loading2FA}>
                 Désactiver
-              </button>
+              </BtnSecondary>
             ) : (
-              <button
-                type="button"
-                onClick={handleEnable2FA}
-                disabled={loading2FA}
-                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all"
-              >
+              <BtnPrimary onClick={handleEnable2FA} loading={loading2FA} disabled={loading2FA}>
                 Activer le 2FA
-              </button>
+              </BtnPrimary>
             )}
           </div>
         </div>
 
         {showQRCode && (
-          <div className="mt-5 grid grid-cols-[160px_1fr] gap-6 p-5 bg-white border border-gray-200 rounded-xl">
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6 p-5 bg-gray-50 border border-gray-200 rounded-xl">
             <div className="flex flex-col items-center gap-2">
               <div className="w-[140px] h-[140px] bg-white rounded-lg flex items-center justify-center border border-gray-200">
                 {qrCodeUrl ? (
@@ -977,43 +984,39 @@ const SecurityForm = ({ userData, showToast }) => {
                   <FaClock className="animate-spin text-gray-400" size={24} />
                 )}
               </div>
-              <p className="text-[11px] text-gray-500 text-center">
+              <p className="text-[10px] text-gray-500 text-center">
                 Scannez avec Google Authenticator, Authy, etc.
               </p>
             </div>
             <div className="flex flex-col gap-3">
-              <p className="text-xs text-gray-500 m-0">
+              <p className="text-xs text-gray-600 m-0">
                 Entrez le code à 6 chiffres de votre application.
               </p>
-              <input
-                type="text"
-                value={verificationCode}
-                onChange={(e) =>
-                  setVerificationCode(e.target.value.replace(/\D/g, ""))
-                }
-                maxLength={6}
-                className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-center tracking-[4px] text-lg font-mono"
-                placeholder="••••••"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleVerify2FA}
-                  disabled={loading2FA}
-                  className="flex-1 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all"
-                >
-                  {loading2FA && <FaClock className="animate-spin" size={12} />}
-                  Confirmer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowQRCode(false)}
-                  className="px-5 py-2.5 bg-transparent text-gray-500 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all"
-                >
-                  Annuler
-                </button>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) =>
+                    setVerificationCode(e.target.value.replace(/\D/g, ""))
+                  }
+                  maxLength={6}
+                  className="w-full p-3 bg-white border border-gray-200 rounded-lg text-center tracking-[4px] text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="••••••"
+                />
               </div>
-              <p className="text-[10px] text-gray-400 m-0">
+              <div className="flex gap-2">
+                <BtnPrimary
+                  onClick={handleVerify2FA}
+                  loading={loading2FA}
+                  disabled={loading2FA}
+                >
+                  Confirmer
+                </BtnPrimary>
+                <BtnSecondary onClick={() => setShowQRCode(false)}>
+                  Annuler
+                </BtnSecondary>
+              </div>
+              <p className="text-[9px] text-gray-400 m-0">
                 Conservez votre code de secours en lieu sûr.
               </p>
             </div>
