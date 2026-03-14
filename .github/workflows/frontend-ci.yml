@@ -11,18 +11,22 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Mis à jour vers v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # Mis à jour vers v4
         with:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci # Utilisation de 'npm ci' recommandé pour les environnements CI
 
       - name: Build project
         run: npm run build
+        # IMPORTANT : Si votre build React/Next.js a besoin de variables d'environnement,
+        # vous devez les déclarer ici. Par exemple :
+        # env:
+        #   VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Deploy to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -30,5 +34,5 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist
-          server-dir: /public_html/dssip.bambaray.mg
+          local-dir: ./dist/ # Vérifiez bien que votre projet génère bien un dossier 'dist' (et non '.next' ou 'build')
+          server-dir: /public_html/dssip.bambaray.mg/
