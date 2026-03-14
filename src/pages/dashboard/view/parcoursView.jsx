@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
-  FaTimes, FaExclamationTriangle, FaEye
+  FaTimes, FaExclamationTriangle
 } from "react-icons/fa";
 import { 
   Download, FileSpreadsheet, FileText,
@@ -328,66 +328,16 @@ const ConfirmModal = ({ title, message, icon: Icon, onConfirm, onClose, confirmT
   </ModalShell>
 );
 
-// ── Modal détail parcours ─────────────────────────────────────────────────────
-const DetailModal = ({ parcours, onClose, onEdit }) => (
-  <ModalShell
-    title="Détail du parcours"
-    icon={FaEye}
-    onClose={onClose}
-    footer={<>
-      <BtnCancel onClick={onClose} />
-      <button
-        onClick={() => {
-          onEdit(parcours);
-          onClose();
-        }}
-        className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold shadow-md hover:bg-blue-700 transition-colors"
-      >
-        Modifier
-      </button>
-    </>}
-  >
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-2xl font-extrabold text-gray-900 mb-1">{parcours.label}</h3>
-        <p className="text-sm text-gray-500">{parcours.mention}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 bg-gray-50 rounded-xl">
-          <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Niveau</p>
-          <Pill tone="blue">{parcours.niveau || "—"}</Pill>
-        </div>
-        <div className="p-4 bg-gray-50 rounded-xl">
-          <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Durée</p>
-          <p className="font-semibold text-gray-900">{parcours.duree || "—"}</p>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-100 pt-4">
-        <p className="text-xs text-gray-500 mb-2">Informations supplémentaires</p>
-        <p className="text-sm text-gray-700">
-          <span className="font-medium">ID :</span> {parcours.id}
-        </p>
-      </div>
-    </div>
-  </ModalShell>
-);
-
 // ── Carte parcours — vue mobile ───────────────────────────────────────────────
-const ParcoursCard = ({ parcours, onEdit, onDelete, onView }) => (
+const ParcoursCard = ({ parcours, onEdit, onDelete }) => (
   <div
     className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-    onClick={() => onView(parcours)}
+    onClick={() => onEdit(parcours)}
   >
     {/* Ligne 1 : ID + actions */}
     <div className="flex items-center justify-between">
       <span className="text-xs font-bold text-gray-400">ID {parcours.id}</span>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => onView(parcours)}
-          className="p-1.5 rounded-lg hover:bg-green-100 text-gray-400 hover:text-green-600 transition" title="Voir détails">
-          <FaEye size={14} className="text-green-600" />
-        </button>
         <button onClick={() => onEdit(parcours)}
           className="p-1.5 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" title="Modifier">
           <FaEdit size={14} className="text-blue-600" />
@@ -551,9 +501,7 @@ export default function ParcoursView() {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
-  const [selectedParcours, setSelectedParcours] = useState(null);
   const [editingId, setEditingId] = useState(null);
   
   // Pagination et tri
@@ -701,14 +649,9 @@ export default function ParcoursView() {
     setShowModal(true);
   };
 
-  const handleViewDetails = (p) => {
-    setSelectedParcours(p);
-    setShowDetailModal(true);
-  };
-
   const handleRowClick = (parcours, e) => { 
     if (e.target.closest('button')) return; 
-    handleViewDetails(parcours); 
+    handleOpenModal(parcours); 
   };
 
   // ── Sauvegarder ────────────────────────────────────────────────────
@@ -834,17 +777,6 @@ export default function ParcoursView() {
         />
       )}
 
-      {showDetailModal && selectedParcours && (
-        <DetailModal
-          parcours={selectedParcours}
-          onClose={() => {
-            setShowDetailModal(false);
-            setSelectedParcours(null);
-          }}
-          onEdit={handleOpenModal}
-        />
-      )}
-
       <div className="max-w-screen-2xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
 
         {/* En-tête */}
@@ -945,7 +877,6 @@ export default function ParcoursView() {
                 parcours={parcours} 
                 onEdit={handleOpenModal} 
                 onDelete={handleDeleteClick}
-                onView={handleViewDetails}
               />
             ))}
           </div>
@@ -1008,13 +939,6 @@ export default function ParcoursView() {
                     </td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleViewDetails(parcours); }}
-                          className="p-1.5 rounded hover:bg-green-100 text-gray-400 hover:text-green-600 transition" 
-                          title="Voir détails"
-                        >
-                          <FaEye size={15} className="text-green-600" />
-                        </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleOpenModal(parcours); }}
                           className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition" 
