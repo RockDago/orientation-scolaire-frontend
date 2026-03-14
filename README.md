@@ -16,6 +16,8 @@ npm install
 ### 3. Installer les dépendances supplémentaires
 
 ```bash
+npm install jspdf jspdf-autotable xlsx --legacy-peer-deps
+npm install lucide-react --legacy-peer-deps
 npm install leaflet --legacy-peer-deps
 npm install react-toastify --legacy-peer-deps
 npm install react-icons react-router-dom react-hot-toast react-simple-maps recharts d3 d3-geo --legacy-peer-deps
