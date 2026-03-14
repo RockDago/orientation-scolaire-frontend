@@ -1,5 +1,3 @@
-// C:\xampp\htdocs\orientation-scolaire-professionnelle\frontend\src\pages\dashboard\view\dashboardadminView.jsx
-
 import React, { useState, useEffect } from "react";
 import {
   FaGlobe,
@@ -36,12 +34,58 @@ const formatDateToFR = (dateString) => {
   return `${day}/${month}/${year}`;
 };
 
+// Fonction utilitaire pour extraire les stats de manière robuste
+const extractStats = (data) => {
+  if (!data) {
+    return {
+      totalViews: 0,
+      trendViews: 0,
+      topMetier: null
+    };
+  }
+
+  console.log("Données brutes reçues:", data);
+  console.log("Structure stats:", data.stats);
+  console.log("Structure totale:", JSON.stringify(data, null, 2));
+
+  // Essayer différentes structures possibles
+  let totalViews = 0;
+  let trendViews = 0;
+  let topMetier = null;
+
+  // Cas 1: data.stats existe (structure actuelle)
+  if (data.stats) {
+    totalViews = data.stats.total_views ?? data.stats.totalViews ?? data.stats.views ?? 0;
+    trendViews = data.stats.trend_views ?? data.stats.trendViews ?? data.stats.trend ?? 0;
+    topMetier = data.stats.top_metier ?? data.stats.topMetier ?? null;
+  }
+  // Cas 2: data.total_views directement dans la racine
+  else if (data.total_views !== undefined || data.totalViews !== undefined) {
+    totalViews = data.total_views ?? data.totalViews ?? 0;
+    trendViews = data.trend_views ?? data.trendViews ?? data.trend ?? 0;
+    topMetier = data.top_metier ?? data.topMetier ?? null;
+  }
+  // Cas 3: data.views directement
+  else if (data.views !== undefined) {
+    totalViews = data.views;
+    trendViews = data.trend ?? 0;
+    topMetier = data.top_metier ?? data.topMetier ?? null;
+  }
+
+  console.log("Valeurs extraites:", { totalViews, trendViews, topMetier });
+
+  return {
+    totalViews: Number(totalViews) || 0,
+    trendViews: Number(trendViews) || 0,
+    topMetier: topMetier
+  };
+};
+
 // ─── STAT CARD MODERNE ────────────────────────────────────────────────────────
 
 function StatCardModerne({
   label,
   value,
-  icon: Icon,
   trend,
   trendLabel,
   accentColor,
@@ -154,7 +198,20 @@ function StatCardModerne({
 
 function LineChartSVG({ data }) {
   const [hov, setHov] = useState(null);
-  const pts = data.map((d) => ({ y: d.month, v: d.visites }));
+  
+  // S'assurer que les données sont valides
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm text-gray-500">Aucune donnée disponible pour le graphique</p>
+      </div>
+    );
+  }
+
+  const pts = data.map((d) => ({ 
+    y: d.month || d.mois || d.label || `Mois ${d.index || ''}`, 
+    v: d.visites || d.views || d.vues || d.value || 0 
+  }));
 
   const W = 580,
     H = 230;
@@ -173,11 +230,10 @@ function LineChartSVG({ data }) {
   const xP = (i) => PL + (i / (pts.length - 1 || 1)) * cW;
   const yP = (v) => PT + cH - ((v - minV) / (maxV - minV || 1)) * cH;
 
-  // Générer des lignes de grille entières (1, 2, 3, 4, 5, 6, 7, 8, etc.)
+  // Générer des lignes de grille
   const generateGridLines = (min, max) => {
     if (max <= 0) return [];
 
-    // Calculer le pas pour avoir environ 4 lignes
     const numLines = 4;
     const step = Math.max(1, Math.ceil(max / numLines));
 
@@ -343,9 +399,18 @@ function LineChartSVG({ data }) {
 
 function BarChartSVG({ data }) {
   const [hov, setHov] = useState(null);
+  
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm text-gray-500">Aucune donnée disponible pour le graphique</p>
+      </div>
+    );
+  }
+
   const mapped = data.map((d, i) => ({
-    r: d.day,
-    v: d.vues,
+    r: d.day || d.jour || d.label || `Jour ${d.index || ''}`,
+    v: d.vues || d.views || d.value || 0,
     c: PIE_COLORS[i % PIE_COLORS.length],
   }));
 
@@ -492,7 +557,16 @@ function BarChartSVG({ data }) {
 
 function DonutChartSVG({ data }) {
   const [hov, setHov] = useState(null);
-  const total = data.reduce((s, d) => s + d.value, 0) || 0;
+  
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm text-gray-500">Aucune donnée disponible pour le graphique</p>
+      </div>
+    );
+  }
+
+  const total = data.reduce((s, d) => s + (d.value || d.vues || d.count || 0), 0) || 0;
 
   const cx = 120,
     cy = 120,
@@ -502,7 +576,7 @@ function DonutChartSVG({ data }) {
   const slices = data.reduce((acc, d, i) => {
     const startAngle =
       acc.length === 0 ? -Math.PI / 2 : acc[acc.length - 1].endAngle;
-    const a = total > 0 ? (d.value / total) * 2 * Math.PI : 0;
+    const a = total > 0 ? ((d.value || d.vues || d.count || 0) / total) * 2 * Math.PI : 0;
     const endAngle = startAngle + a;
 
     const x1 = cx + R * Math.cos(startAngle),
@@ -516,7 +590,15 @@ function DonutChartSVG({ data }) {
     const lg = a > Math.PI ? 1 : 0;
     const path = `M ${x1} ${y1} A ${R} ${R} 0 ${lg} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${r} ${r} 0 ${lg} 0 ${ix1} ${iy1} Z`;
 
-    acc.push({ ...d, path, color: PIE_COLORS[i], endAngle });
+    acc.push({ 
+      ...d, 
+      path, 
+      color: PIE_COLORS[i % PIE_COLORS.length], 
+      endAngle,
+      name: d.name || d.label || d.nom || `Métier ${i + 1}`,
+      value: d.value || d.vues || d.count || 0,
+      croissance: d.croissance || d.trend || d.growth || "+0%"
+    });
     return acc;
   }, []);
 
@@ -631,22 +713,25 @@ const DashboardAdminView = () => {
 
   const [dashData, setDashData] = useState(null);
   const [loadingDash, setLoadingDash] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchDash = async () => {
     setLoadingDash(true);
+    setError(null);
     try {
+      console.log("Fetching dashboard data with filter:", dateFilter);
       const data = await getDashboardData(
         dateFilter,
         dateFilter === "custom" ? customStartDate : null,
         dateFilter === "custom" ? customEndDate : null,
       );
       
-      // Log pour déboguer
       console.log("Données reçues de l'API:", data);
       
       setDashData(data);
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
+      setError(error.message || "Erreur de chargement");
       setDashData(null);
     } finally {
       setLoadingDash(false);
@@ -657,15 +742,28 @@ const DashboardAdminView = () => {
     fetchDash();
   }, [dateFilter, customStartDate, customEndDate]);
 
-  const visibiliteGrowthData = dashData?.charts?.monthly_visibility ?? [];
-  const activityData = dashData?.charts?.weekly_activity ?? [];
-  const metiersRecherchesData = dashData?.charts?.top_metiers ?? [];
+  // Extraire les stats de manière robuste
+  const stats = extractStats(dashData);
 
-  // CORRECTION ICI : Extraction robuste et simple
-  const totalViews = dashData?.stats?.total_views ?? 0;
-  const trendViews = dashData?.stats?.trend_views ?? 0;
+  const visibiliteGrowthData = dashData?.charts?.monthly_visibility ?? 
+                               dashData?.monthly_visibility ?? 
+                               dashData?.visibility ?? 
+                               dashData?.charts?.monthly ?? [];
 
-  const topMetierAPI = dashData?.stats?.top_metier ?? null;
+  const activityData = dashData?.charts?.weekly_activity ?? 
+                       dashData?.weekly_activity ?? 
+                       dashData?.activity ?? 
+                       dashData?.charts?.weekly ?? [];
+
+  const metiersRecherchesData = dashData?.charts?.top_metiers ?? 
+                                 dashData?.top_metiers ?? 
+                                 dashData?.metiers ?? 
+                                 dashData?.charts?.top ?? [];
+
+  // Utiliser les stats extraites
+  const totalViews = stats.totalViews;
+  const trendViews = stats.trendViews;
+  const topMetierAPI = stats.topMetier;
 
   const statGlobal = {
     label: "Vues totales",
@@ -679,12 +777,12 @@ const DashboardAdminView = () => {
 
   const topMetier = topMetierAPI;
   const statMetier = {
-    label: topMetier ? `Top Métier : ${topMetier.name}` : "Top Métier : —",
-    value: topMetier?.value ?? 0,
+    label: topMetier ? `Top Métier : ${topMetier.name || topMetier.label || "Métier"}` : "Top Métier : —",
+    value: topMetier?.value ?? topMetier?.vues ?? topMetier?.count ?? 0,
     icon: FaBriefcase,
     trend: (() => {
-      const trendStr = topMetier?.croissance ?? "0%";
-      const num = parseInt(trendStr.replace("+", "").replace("%", ""));
+      const trendStr = topMetier?.croissance ?? topMetier?.trend ?? "0%";
+      const num = parseInt(trendStr.toString().replace("+", "").replace("%", ""));
       return isNaN(num) ? 0 : num;
     })(),
     trendLabel: "demande en hausse",
@@ -797,6 +895,11 @@ const DashboardAdminView = () => {
             <p className="mt-1 text-sm text-gray-500">
               Suivez les performances globales de la plateforme d'éducation.
             </p>
+            {error && (
+              <p className="mt-2 text-sm text-red-500">
+                Erreur: {error}
+              </p>
+            )}
           </div>
 
           {/* Filtres */}
@@ -869,7 +972,7 @@ const DashboardAdminView = () => {
             </div>
 
             <div className="flex p-1 bg-white border border-gray-100 shadow-sm rounded-xl">
-              {CHART_TABS.map(({ k, I, l }) => (
+              {CHART_TABS.map(({ k, l }) => (
                 <button
                   key={k}
                   onClick={() => setChart(k)}
@@ -891,9 +994,12 @@ const DashboardAdminView = () => {
           <div className="p-6 md:p-8 bg-white">
             <div className="mx-auto max-w-4xl">
               {loadingDash && (
-                <p className="text-xs text-gray-400 mb-4">
-                  Chargement des données…
-                </p>
+                <div className="flex justify-center py-12">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-500">Chargement des données...</span>
+                  </div>
+                </div>
               )}
               {!loadingDash && (
                 <>

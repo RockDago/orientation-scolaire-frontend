@@ -36,5 +36,18 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/ 
+          local-dir: ./dist/
           server-dir: /
+       
+          # 1. Force la suppression des anciens fichiers avant déploiement (évite les conflits)
+          dangerous-clean-slate: true
+          # 2. Crée automatiquement les dossiers manquants
+          create-directories: true
+          # 3. Exclut les fichiers système pour éviter les conflits
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/*.log
+          # 4. Mode de synchronisation complet pour une mise à jour propre
+          dry-run: false
