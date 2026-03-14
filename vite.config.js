@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+ 
+  base: './',
+
   assetsInclude: ['**/*.geojson'],
 
   plugins: [
@@ -26,26 +29,27 @@ export default defineConfig({
         name: 'Orientation Scolaire et Professionnelle',
         short_name: 'Orientation',
         description: "Plateforme interactive d'orientation scolaire et professionnelle",
-        start_url: '/',
-        scope: '/',
+     
+        start_url: '.',
+        scope: './',
         display: 'standalone',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         icons: [
           {
-            src: '/pwa-192x192.png',
+            src: 'pwa-192x192.png', 
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/pwa-512x512.png',
+            src: 'pwa-512x512.png', 
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/pwa-512x512.png',
+            src: 'pwa-512x512.png', 
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
