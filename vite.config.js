@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
  
-  base: './',
+  base: '/',
 
   assetsInclude: ['**/*.geojson'],
 
@@ -30,8 +30,8 @@ export default defineConfig({
         short_name: 'Orientation',
         description: "Plateforme interactive d'orientation scolaire et professionnelle",
      
-        start_url: '.',
-        scope: './',
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
         theme_color: '#ffffff',
         background_color: '#ffffff',
