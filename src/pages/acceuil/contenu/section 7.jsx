@@ -63,28 +63,28 @@ export default function Section7({ onSuivant, onRetour }) {
         {/* Back button aligné à gauche */}
         <button 
           onClick={onRetour} 
-          className="self-start text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center" 
+          className="self-start text-white/80 hover:text-white transition-colors flex items-center justify-center p-0" 
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={38} />
+          <IoArrowBackCircleOutline size={42} />
         </button>
 
-        {/* Zone de contenu scrollable */}
-        <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
-          {/* Contenu aligné à gauche */}
-          <div className="flex flex-col items-start w-full max-w-lg">
+        {/* Zone de contenu scrollable - centrée verticalement et horizontalement sur mobile */}
+        <div className="flex-1 overflow-y-auto py-4 scrollbar-hide flex flex-col justify-center items-center">
+          {/* Contenu centré */}
+          <div className="flex flex-col items-center text-center w-full max-w-lg">
             {/* Titre aligné à gauche - taille comme section 7 */}
-            <h1 className="text-5xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-4">
               Tu es actuellement :
             </h1>
             
-            {/* Sous-texte aligné à gauche */}
-            <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-md lg:max-w-sm mb-6">
+            {/* Sous-texte centré */}
+            <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-xs sm:max-w-md lg:max-w-sm mb-6">
               Indique ta situation pour adapter les recommandations.
             </p>
 
-            {/* Statuts en pills alignées à gauche */}
-            <div className="flex flex-wrap gap-3 w-full max-w-md mb-8">
+            {/* Statuts en pills centrés */}
+            <div className="flex flex-wrap justify-center gap-3 w-full max-w-md mb-8">
               {STATUTS.map((s) => (
                 <button
                   key={s}
@@ -104,8 +104,8 @@ export default function Section7({ onSuivant, onRetour }) {
         </div>
 
         {/* Zone fixe en bas pour le bouton et l'icône home */}
-  <div className="shrink-0 flex flex-col items-start gap-4 pt-4">
-          {/* Bouton Suivant aligné à gauche */}
+  <div className="shrink-0 flex flex-col items-center gap-4 pt-4">
+          {/* Bouton Suivant centré */}
           <button
             onClick={handleSuivant}
             disabled={!statut}

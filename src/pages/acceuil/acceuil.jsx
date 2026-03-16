@@ -41,6 +41,7 @@ function Section3Wrapper({ metierSelectionne, setMetierSelectionne, ...props }) 
 export default function Acceuil() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { uuid } = useParams();
 
   const [metierSelectionne,            setMetierSelectionne]            = useState(null);
   const [regionSelectionnee,           setRegionSelectionnee]           = useState(null);
@@ -53,7 +54,17 @@ export default function Acceuil() {
 
   const naviguerVers = (path, direction = "forward") => {
     setAnimDir(direction);
-    navigate(path);
+    let finalPath = path;
+    if (path.startsWith("/acceuil")) {
+      // Si le path est /acceuil/quelque-chose, on injecte le uuid
+      if (!path.includes(`/acceuil/${uuid}`)) {
+        finalPath = path.replace("/acceuil", `/acceuil/${uuid}`);
+      }
+    } else {
+      // Path relatif
+      finalPath = `/acceuil/${uuid}${path.startsWith("/") ? "" : "/"}${path}`;
+    }
+    navigate(finalPath);
   };
 
   useEffect(() => {
@@ -64,7 +75,12 @@ export default function Acceuil() {
   const trackingInFlight = useRef(new Set());
 
   useEffect(() => {
-    const page     = location.pathname;
+    const page = location.pathname;
+    
+    // On ne traque que l'entrée principale de l'orientation
+    // (pour éviter de compter chaque étape du questionnaire)
+    if (!page.endsWith("/orientation")) return;
+
     const metierId = metierSelectionne?.id ?? null;
     if (trackingInFlight.current.has(page)) return;
     trackingInFlight.current.add(page);

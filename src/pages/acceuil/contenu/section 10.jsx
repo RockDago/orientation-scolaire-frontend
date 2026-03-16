@@ -139,8 +139,10 @@ function filtrerMetiers(metiers, reponseDomaine, reponseEtudes) {
   
     if (reponseDomaine) {
       const domaineNorm = normalize(reponseDomaine);
+      const metierDomNorm = normalize(metier.domaine);
       const mentionNorm = normalize(metier.mention);
-      if (mentionNorm !== domaineNorm) return false;
+      // On vérifie le domaine en priorité, puis la mention par sécurité
+      if (metierDomNorm !== domaineNorm && mentionNorm !== domaineNorm) return false;
     }
   
     if (reponseEtudes) {
@@ -316,204 +318,179 @@ export default function Section10({
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
-        <button
-          onClick={onRetour}
-          className="self-start shrink-0 text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center"
-          aria-label="Retour"
-        >
-          <IoArrowBackCircleOutline size={38} />
-        </button>
-
-        <div className="flex-1 min-h-0 overflow-y-auto py-2 scrollbar-hide">
-          <h1 className="text-5xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mt-2 mb-1">
-            Métiers
-            <br />
-            suggérés
-          </h1>
-
-          {!loading && (
-            <p className="text-sm text-white/75 mb-4 font-medium">
-              <span className="text-white font-bold">{total}</span> métier
-              {total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
-            </p>
-          )}
-
-          <div
-            className="w-full max-w-2xl mx-auto"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* Aucun résultat */}
-            {!loading && total === 0 && (
-              <div
-                className="rounded-3xl p-8 flex flex-col items-center justify-center gap-3"
-                style={{
-                  background: "rgba(255,255,255,0.14)",
-                  border: "1px solid rgba(255,255,255,0.28)",
-                  backdropFilter: "blur(12px)",
-                }}
-              >
-                <p className="text-white/85 text-center text-base leading-relaxed">
-                  Désolé, aucun métier ne correspond à tes critères.
-                  <br />
-                  Essaie une autre combinaison.
-                </p>
-                {process.env.NODE_ENV === "development" && (
-                  <p className="text-white/40 text-xs text-center mt-2 font-mono">
-                    mention = «{reponseDomaine || "—"}»
-                    <br />
-                    niveau = «
-                    {reponseEtudes === "court"
-                      ? "Bac+2 ou Bac+3"
-                      : reponseEtudes === "long"
-                        ? "Bac+4 à Bac+8"
-                        : "—"}
-                    »
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Carte métier */}
-            {!loading && total > 0 && metier && (
-              <>
-                <div
-                  className="rounded-3xl p-5 sm:p-6 flex flex-col gap-3 slide-in"
-                  key={metier.id || index}
-                  style={{
-                    background: "rgba(255,255,255,0.14)",
-                    border: "1px solid rgba(255,255,255,0.28)",
-                    backdropFilter: "blur(12px)",
-                  }}
-                >
-                  {metier.mention && metier.mention !== "—" && (
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="inline-block text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full"
-                        style={{
-                          background: "rgba(255,255,255,0.20)",
-                          color: "white",
-                        }}
-                      >
-                        {metier.mention}
-                      </span>
-                    </div>
-                  )}
-
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-snug break-words">
-                    {metier.label}
-                  </h2>
-
-                  {metier.description && (
-                    <p className="text-sm sm:text-base text-white/85 leading-relaxed">
-                      {metier.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {metier.niveau && metier.niveau !== "Bac+2 ou Bac+3" && (
-                      <span
-                        className="inline-block px-3 py-1 rounded-full text-xs font-bold"
-                        style={{
-                          background: "rgba(255,255,255,0.22)",
-                          color: "white",
-                        }}
-                      >
-                        Niveau : {metier.niveau}
-                      </span>
-                    )}
-                    {metier.serie && (
-                      <span
-                        className="inline-block px-3 py-1 rounded-full text-xs font-bold"
-                        style={{
-                          background: "rgba(255,255,255,0.15)",
-                          color: "rgba(255,255,255,0.85)",
-                        }}
-                      >
-                        Série {metier.serie}
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleVoirParcours}
-                    className="mt-1 inline-flex items-center gap-2 self-start px-5 py-2.5 rounded-full text-sm font-bold transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
-                    style={{ background: "white", color: "#1250c8" }}
-                  >
-                    Voir le parcours
-                    <FiArrowRight size={15} />
-                  </button>
-                </div>
-
-                {/* Navigation dots */}
-                <div className="flex items-center justify-between mt-4 mb-2">
-                  <button
-                    onClick={handlePrev}
-                    disabled={total <= 1}
-                    className="w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-30"
-                    style={{
-                      background: "rgba(255,255,255,0.18)",
-                      color: "white",
-                    }}
-                    aria-label="Précédent"
-                  >
-                    <FiChevronLeft size={22} />
-                  </button>
-
-                  <div className="flex items-center gap-1.5 flex-wrap justify-center max-w-[220px]">
-                    {metiersFiltres.slice(0, 10).map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setIndex(i)}
-                        className="rounded-full transition-all"
-                        style={{
-                          width: i === index ? "20px" : "8px",
-                          height: "8px",
-                          background:
-                            i === index ? "white" : "rgba(255,255,255,0.4)",
-                        }}
-                        aria-label={`Métier ${i + 1}`}
-                      />
-                    ))}
-                    {total > 10 && (
-                      <span className="text-white/50 text-xs font-medium ml-1">
-                        +{total - 10}
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleNext}
-                    disabled={total <= 1}
-                    className="w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-30"
-                    style={{
-                      background: "rgba(255,255,255,0.18)",
-                      color: "white",
-                    }}
-                    aria-label="Suivant"
-                  >
-                    <FiChevronRight size={22} />
-                  </button>
-                </div>
-
-                <p className="text-center text-white/50 text-xs mt-1">
-                  {index + 1} / {total}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="shrink-0 flex justify-center pt-3 pb-1">
+      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-8 pt-4 pb-3">
+        {/* Header simple */}
+        <div className="flex items-center justify-between shrink-0 mb-0">
           <button
-            onClick={() => navigate("/acceuil/orientation")}
-            className="text-white hover:text-white/80 transition-colors"
-            aria-label="Accueil"
+            onClick={onRetour}
+            className="text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
+            aria-label="Retour"
           >
-            <HiOutlineHome size={30} />
+            <IoArrowBackCircleOutline size={42} />
           </button>
         </div>
+
+        {/* Titre giant */}
+        <div className="mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+            Métiers<br />Suggérés
+          </h1>
+          {!loading && (
+            <p className="text-xs sm:text-sm text-white/60 font-black tracking-widest uppercase">
+              {total} résultat{total > 1 ? "s" : ""}
+            </p>
+          )}
+        </div>
+
+        {/* Zone de la carte (flexible) */}
+        <div
+          className="flex-1 flex flex-col w-full max-w-2xl mx-auto min-h-0"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Aucun résultat */}
+          {!loading && total === 0 && (
+            <div
+              className="rounded-3xl p-8 flex flex-col items-center justify-center gap-3"
+              style={{
+                background: "rgba(255,255,255,0.14)",
+                border: "1px solid rgba(255,255,255,0.28)",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <p className="text-white/85 text-center text-base leading-relaxed">
+                Désolé, aucun métier ne correspond à tes critères.
+                <br />
+                Essaie une autre combinaison.
+              </p>
+            </div>
+          )}
+
+          {/* Carte métier - Remplit bien l'écran */}
+          {!loading && total > 0 && metier && (
+            <div
+              className="flex-1 flex flex-col rounded-3xl p-6 sm:p-8 slide-in overflow-hidden"
+              key={metier.id || index}
+              style={{
+                background: "rgba(255,255,255,0.14)",
+                border: "1px solid rgba(255,255,255,0.28)",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <div className="flex-1 overflow-y-auto pr-1 scrollbar-hide">
+                {metier.mention && metier.mention !== "—" && (
+                  <div className="mb-4">
+                    <span
+                      className="inline-block text-[11px] font-black tracking-widest uppercase px-3 py-1.5 rounded-full"
+                      style={{
+                        background: "rgba(255,255,255,0.20)",
+                        color: "white",
+                      }}
+                    >
+                      {metier.mention}
+                    </span>
+                  </div>
+                )}
+
+                <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4 pr-4">
+                  {metier.label}
+                </h2>
+
+                {metier.description && (
+                  <div className="space-y-2 mb-6">
+                    <p className="text-xs font-black text-white/50 uppercase tracking-widest">Description</p>
+                    <p className="text-base sm:text-lg text-white/90 leading-relaxed font-medium">
+                      {metier.description}
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  {metier.niveau && (
+                    <div className="bg-white/10 rounded-2xl p-3 border border-white/10">
+                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Niveau Requis</p>
+                      <p className="text-white font-bold text-sm">{metier.niveau}</p>
+                    </div>
+                  )}
+                  {metier.serie && (
+                    <div className="bg-white/10 rounded-2xl p-3 border border-white/10">
+                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Série</p>
+                      <p className="text-white font-bold text-sm">{metier.serie}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="shrink-0 pt-4">
+                <button
+                  onClick={handleVoirParcours}
+                  className="w-full py-4 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-3 hover:shadow-2xl active:scale-95 shadow-lg"
+                  style={{ background: "white", color: "#1250c8" }}
+                >
+                  Découvrir le parcours
+                  <FiArrowRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Pagination & Home */}
+        {!loading && total > 0 && (
+          <div className="shrink-0 pt-4">
+            <div className="flex items-center justify-between max-w-2xl mx-auto w-full px-2 mb-4">
+              <button
+                onClick={handlePrev}
+                disabled={total <= 1}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10"
+                aria-label="Précédent"
+              >
+                <FiChevronLeft size={24} />
+              </button>
+
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                  {metiersFiltres.slice(0, 8).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setIndex(i)}
+                      className="rounded-full transition-all"
+                      style={{
+                        width: i === index ? "18px" : "6px",
+                        height: "6px",
+                        background: i === index ? "white" : "rgba(255,255,255,0.3)",
+                      }}
+                      aria-label={`Métier ${i + 1}`}
+                    />
+                  ))}
+                  {total > 8 && <span className="text-white/40 text-[9px] font-black">+{total - 8}</span>}
+                </div>
+                <p className="text-[10px] font-black text-white/50 tracking-widest uppercase">
+                  {index + 1} / {total}
+                </p>
+              </div>
+
+              <button
+                onClick={handleNext}
+                disabled={total <= 1}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 bg-white/10 text-white border border-white/10"
+                aria-label="Suivant"
+              >
+                <FiChevronRight size={24} />
+              </button>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                onClick={() => navigate("/acceuil/orientation")}
+                className="text-white hover:text-white/80 transition-colors bg-white/10 p-2 rounded-full"
+                aria-label="Accueil"
+              >
+                <HiOutlineHome size={26} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`

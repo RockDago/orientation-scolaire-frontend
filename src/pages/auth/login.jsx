@@ -63,10 +63,11 @@ const Login = () => {
       );
 
       setTimeout(() => {
+        const uuid = Math.random().toString(36).substring(2, 11);
         if (utilisateur.role === "admin") {
-          navigate("/dashboard/admin", { replace: true });
+          navigate(`/dashboard/admin/${uuid}`, { replace: true });
         } else {
-          navigate("/acceuil", { replace: true });
+          navigate(`/acceuil/${uuid}/orientation`, { replace: true });
         }
       }, 2000);
 

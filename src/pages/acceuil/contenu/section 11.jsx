@@ -3,7 +3,7 @@ import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome } from "react-icons/hi";
 import { FiArrowRight, FiCheckCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { getMetierById } from "../../../services/metier.services";
+import { getMetierById, getAllMetiersCache } from "../../../services/metier.services";
 
 function GradBg() {
   return (
@@ -40,6 +40,7 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
   const navigate = useNavigate();
   const [metierDetails, setMetierDetails] = useState(metier || null);
   const [loading,        setLoading]       = useState(false);
+  const [metiersSimilaires, setMetiersSimilaires] = useState([]);
 
 
   useEffect(() => {
@@ -48,17 +49,13 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
     const loadDetails = async () => {
       if (metier.parcoursFormation?.length > 0) {
         setMetierDetails(metier);
-        return;
-      }
-
-      if (metier.id && typeof metier.id === "number") {
+      } else if (metier.id && typeof metier.id === "number") {
         setLoading(true);
         try {
           const details = await getMetierById(metier.id);
           setMetierDetails(details);
         } catch (err) {
           console.error("Erreur chargement détails métier:", err);
-    
           setMetierDetails(metier);
         } finally {
           setLoading(false);
@@ -66,10 +63,25 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
       } else {
         setMetierDetails(metier);
       }
+
+      // Charger les métiers du même domaine
+      try {
+        const tous = await getAllMetiersCache();
+        const domaine = normalize(metier.domaine || metier.mention);
+        const filtrés = tous.filter(other => 
+          other.id !== metier.id && 
+          (normalize(other.domaine) === domaine || normalize(other.mention) === domaine)
+        ).slice(0, 4);
+        setMetiersSimilaires(filtrés);
+      } catch (err) {
+        console.error("Erreur chargement métiers similaires:", err);
+      }
     };
 
+    const normalize = (str) => (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
     loadDetails();
-  }, [metier?.id]);
+  }, [metier?.id, metier?.domaine, metier?.mention]);
 
   const m = metierDetails;
 
@@ -123,10 +135,10 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
         {/* Retour */}
         <button
           onClick={onRetour}
-          className="self-start shrink-0 text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center"
+          className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={38} />
+          <IoArrowBackCircleOutline size={42} />
         </button>
 
         {/* Zone scrollable */}
@@ -140,16 +152,13 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
             Parcours de formation
           </span>
 
-          {/* ✅ Titre dynamique selon le métier sélectionné en Section10 */}
-          <h1 className="text-5xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-1">
-            Devenir
-          </h1>
-          <h2
-            className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-3 break-words"
-            style={{ color: "rgba(255,255,255,0.9)" }}
-          >
-            {m?.label || "—"}
-          </h2>
+          {/* Formation sélectionnée */}
+          <div className="mb-8">
+            <p className="text-sm text-white/70 font-semibold mb-2 uppercase tracking-wider">Formation sélectionnée :</p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight break-words">
+              {m?.label || "—"}
+            </h1>
+          </div>
 
           {/* Badge mention */}
           <span className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-5">
@@ -207,8 +216,8 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
                     </p>
                     {i === parcours.length - 1 && (
                       <div className="flex items-center gap-1 mt-1">
-                        <FiCheckCircle size={12} style={{ color: "#a0d820" }} />
-                        <span className="text-[11px] font-semibold" style={{ color: "#a0d820" }}>
+                        <FiCheckCircle size={12} style={{ color: "#1a3ea8" }} />
+                        <span className="text-[11px] font-semibold" style={{ color: "#1a3ea8" }}>
                           Objectif final
                         </span>
                       </div>
@@ -218,6 +227,32 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
               ))}
             </div>
           </div>
+
+          {/* ✅ Autres métiers du même domaine */}
+          {metiersSimilaires.length > 0 && (
+            <div className="w-full max-w-2xl mx-auto mt-8 mb-10">
+              <h3 className="text-white font-bold text-lg mb-4 px-1">Autres métiers dans ce domaine</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {metiersSimilaires.map(sim => (
+                  <button
+                    key={sim.id}
+                    onClick={() => onVoirFormations?.(sim)}
+                    className="flex items-center justify-between gap-3 p-4 rounded-2xl transition-all"
+                    style={{
+                      background: "rgba(255,255,255,0.12)",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                    }}
+                  >
+                    <div className="flex-1 text-left">
+                      <p className="text-white font-bold text-sm leading-tight">{sim.label}</p>
+                      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider mt-1">{sim.niveau}</p>
+                    </div>
+                    <FiArrowRight size={14} className="text-white/60" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Boutons bas */}

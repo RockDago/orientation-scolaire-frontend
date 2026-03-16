@@ -9,7 +9,7 @@ import {
 } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { getAllMetiersCache }  from "../../../services/metier.services";
-import { getAllMentions }      from "../../../services/mention.services";
+import { getAllDomaines }      from "../../../services/domaine.services";
 import { searchMetier }        from "../../../services/metier.services";
 
 
@@ -30,7 +30,7 @@ function MetierDetailsCard({ metier, onClose }) {
         <div>
           <h3 className="text-white font-black text-xl leading-snug pr-8">{metier.label}</h3>
           <div className="flex flex-wrap gap-2 mt-2">
-            <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">{metier.mention}</span>
+            <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">{metier.domaine}</span>
             <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md">Niveau : {metier.niveau}</span>
           </div>
         </div>
@@ -77,7 +77,7 @@ function MetierCard({ metier, onSelect }) {
       {metier.description && (
         <p className="text-white/75 text-xs leading-relaxed line-clamp-2 mb-1.5">{metier.description}</p>
       )}
-      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider">{metier.mention}</p>
+      <p className="text-white/50 text-[10px] uppercase font-bold tracking-wider">{metier.domaine}</p>
     </button>
   );
 }
@@ -85,7 +85,7 @@ function MetierCard({ metier, onSelect }) {
 export default function Section2({ onSelectMetier, selectedMetier, onRetour, searchParam }) {
   const navigate = useNavigate();
   const [allMetiers,  setAllMetiers]  = useState([]);
-  const [allMentions, setAllMentions] = useState([]);
+  const [allDomaines, setAllDomaines] = useState([]);
   const [_loading,    _setLoading]    = useState(true);
 
   const [isMetierComboOpen, setIsMetierComboOpen] = useState(false);
@@ -117,9 +117,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [metiers, mentions] = await Promise.all([getAllMetiersCache(), getAllMentions()]);
+        const [metiers, domaines] = await Promise.all([getAllMetiersCache(), getAllDomaines()]);
         setAllMetiers(metiers);
-        setAllMentions(mentions);
+        setAllDomaines(domaines);
       } catch (error) {
         console.error("Erreur chargement données:", error);
       } finally {
@@ -130,15 +130,15 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   }, []);
 
   const domainesList = useMemo(() =>
-    allMentions.map((m) => ({ id: m.id, label: m.label, keywords: [m.label.toLowerCase()] })),
-    [allMentions]
+    allDomaines.map((d) => ({ id: d.id, label: d.label, keywords: [d.label.toLowerCase()] })),
+    [allDomaines]
   );
 
   const filteredMetiers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return allMetiers;
     return allMetiers.filter((m) =>
-      (m.label + " " + m.mention + " " + m.description + " " + (m.parcours?.join(" ") || ""))
+      (m.label + " " + m.domaine + " " + m.description + " " + (m.parcours?.join(" ") || ""))
         .toLowerCase().includes(q)
     );
   }, [searchQuery, allMetiers]);
@@ -152,9 +152,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
   const metiersParDomaine = useMemo(() => {
     if (!selectedDomaine) return [];
     return allMetiers.filter((m) => {
-      const mentionNorm = (m.mention || "").toLowerCase().trim();
+      const fieldDomNorm = (m.domaine || "").toLowerCase().trim();
       const domaineNorm = selectedDomaine.label.toLowerCase().trim();
-      return mentionNorm === domaineNorm || mentionNorm.includes(domaineNorm) || domaineNorm.includes(mentionNorm);
+      return fieldDomNorm === domaineNorm || fieldDomNorm.includes(domaineNorm) || domaineNorm.includes(fieldDomNorm);
     });
   }, [selectedDomaine, allMetiers]);
 
@@ -233,19 +233,22 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
       <div className="s2-layout">
 
         {/* ══ Colonne gauche ══ */}
-        <div className="s2-left">
+        <div className={`s2-left transition-transform duration-500 ease-in-out ${(isMetierComboOpen || isComboOpen) ? "lg:-translate-y-20 -translate-y-12" : "translate-y-0"}`}>
           <div className="s2-scroll">
 
             {/* Retour */}
             {onRetour && (
               <button onClick={onRetour} className="s2-back" aria-label="Retour"
                 style={{ animation: "s2In 0.5s cubic-bezier(0.16,1,0.3,1) 0.1s both" }}>
-                <IoArrowBackCircleOutline size={36} />
+                <IoArrowBackCircleOutline size={42} />
               </button>
             )}
 
-            {/* Titre */}
-            <div style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both" }}>
+            {/* Titre et description centrés sur mobile */}
+            <div 
+              className={`s2-header-mob transition-all duration-500 ease-in-out ${(isMetierComboOpen || isComboOpen) ? "opacity-30 scale-95" : "opacity-100 scale-100"}`}
+              style={{ animation: "s2In 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both" }}
+            >
               <h1 className="s2-h1">
                 EXPLORER<br /><span className="s2-h1-sub">LES MÉTIERS</span>
               </h1>
@@ -291,7 +294,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
                           <span className="s2-drop-name">{m.label}</span>
                           {localSelected?.id === m.id && <HiCheck className="s2-chk blue" />}
                         </div>
-                        <span className="s2-badge blue">{m.mention}</span>
+                        <span className="s2-badge blue">{m.domaine}</span>
                       </button>
                     )) : (
                       <div className="s2-empty">
@@ -468,14 +471,14 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-back {
           display:inline-flex;align-items:center;justify-content:center;
           color:rgba(255,255,255,.8);background:transparent;border:none;cursor:pointer;
-          width:2.75rem;height:2.75rem;border-radius:.75rem;margin-bottom:.5rem;
-          transition:color .2s,background .2s;
+          padding:0;margin-bottom:.5rem;
+          transition:color .2s,transform .2s;
         }
-        .s2-back:hover{color:white;background:rgba(255,255,255,.1);}
+        .s2-back:hover{color:white;transform:scale(1.1);}
 
         /* Titre */
         .s2-h1 {
-          font-size:clamp(2.25rem,6.5vw,3.75rem);font-weight:900;
+          font-size:clamp(2.1rem,6.2vw,3.75rem);font-weight:900;
           color:white;line-height:1;letter-spacing:-.03em;margin:0 0 .6rem;
         }
         .s2-h1-sub { color:rgba(255,255,255,.65); }
@@ -483,142 +486,221 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           font-size:clamp(.8rem,2vw,.95rem);color:rgba(255,255,255,.72);
           line-height:1.6;max-width:30ch;margin:0 0 clamp(1rem,3vw,1.75rem);
         }
+        @media(max-width: 1023px) {
+          .s2-header-mob { display: flex; flex-direction: column; align-items: center; text-align: center; }
+          .s2-h1 { text-align: center; }
+          .s2-desc { text-align: center; margin-left: auto; margin-right: auto; }
+        }
 
         /* Label */
         .s2-lbl {
-          font-size:.6rem;color:rgba(255,255,255,.85);font-weight:700;
-          letter-spacing:.15em;text-transform:uppercase;margin:0 0 .45rem;
+          font-size: 0.65rem;
+          color: rgba(255, 255, 255, 0.85);
+          font-weight: 800;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          margin: 0 0 0.5rem 0.25rem;
         }
 
         /* Combobox wrapper */
-        .s2-cbwrap { position:relative;width:100%;margin-bottom:.75rem; }
+        .s2-cbwrap { 
+          position:relative; 
+          width:100%; 
+          max-width: 450px; 
+          margin-bottom: 1.25rem; 
+        }
+        @media(max-width: 1023px) {
+          .s2-cbwrap { max-width: 100%; display: flex; flex-direction: column; align-items: center; }
+        }
 
         /* Trigger bouton blanc */
         .s2-trigger {
-          width:100%;background:white;border:2px solid transparent;
-          border-radius:.875rem;
-          padding:clamp(.7rem,1.8vw,.875rem) clamp(.875rem,2.2vw,1.125rem);
-          display:flex;align-items:center;justify-content:space-between;gap:.5rem;
-          cursor:pointer;
-          box-shadow:0 4px 18px rgba(0,0,0,.13);
-          transition:box-shadow .2s,border-color .2s,transform .15s;
-          text-align:left;
+          width: 100%;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 1rem;
+          padding: 0.875rem 1.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          cursor: pointer;
+          box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          text-align: left;
         }
-        .s2-trigger:hover{box-shadow:0 6px 24px rgba(0,0,0,.17);transform:translateY(-1px);}
-        .s2-trigger.open-green{border-color:#86efac;}
+        .s2-trigger:hover {
+          background: white;
+          box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.15);
+          transform: translateY(-2px);
+        }
+        .s2-trigger.open-green { border-color: #4ade80; }
+        .s2-trigger:active { transform: translateY(0); }
 
-        .s2-ph  {font-size:.875rem;font-weight:500;color:#9ca3af;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .s2-val {font-size:.875rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .s2-val.blue  {color:#1250c8;}
-        .s2-val.green {color:#5E9422;}
+        .s2-ph {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #94a3b8;
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .s2-val {
+          font-size: 0.875rem;
+          font-weight: 700;
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .s2-val.blue  { color: #1e40af; }
+        .s2-val.green { color: #166534; }
 
-        .s2-icon {font-size:1.125rem;flex-shrink:0;transition:transform .2s;}
-        .s2-icon.blue  {color:#60a5fa;}
-        .s2-icon.green {color:#4ade80;}
-        .rot180{transform:rotate(180deg);}
+        .s2-icon { font-size: 1.125rem; flex-shrink: 0; transition: transform 0.3s ease; }
+        .s2-icon.blue  { color: #3b82f6; }
+        .s2-icon.green { color: #22c55e; }
+        .rot180 { transform: rotate(180deg); }
 
         /* Dropdown */
         .s2-drop {
-          position:absolute;
-          left:0;
-          right:0;
-          top:calc(100% + 8px);
-          background:white;
-          border-radius:1rem;
-          box-shadow:0 12px 40px rgba(0,0,0,.25);
-          border:1px solid #e2e8f0;
-          overflow:hidden;
-          z-index:1000;
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: calc(100% + 10px);
+          background: rgba(255, 255, 255, 0.98);
+          backdrop-filter: blur(24px);
+          border-radius: 1.25rem;
+          box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          overflow: hidden;
+          z-index: 1000;
+          transform-origin: top;
+          animation: s2DropIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes s2DropIn {
+          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Input de recherche dans le dropdown - DESIGN TOUT BLANC */
+        /* Input de recherche */
         .s2-drop-search {
-          position:relative;
-          padding:1rem;
-          background:white;
-          border-bottom:1px solid #f1f5f9;
+          position: relative;
+          padding: 1rem;
+          background: rgba(248, 250, 252, 0.5);
+          border-bottom: 1px solid #f1f5f9;
         }
         .s2-drop-sicon {
-          position:absolute;
-          left:1.5rem;
-          top:50%;
-          transform:translateY(-50%);
-          color:#94a3b8;
-          font-size:1rem;
-          pointer-events:none;
+          position: absolute;
+          left: 1.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #64748b;
+          font-size: 0.875rem;
+          pointer-events: none;
         }
         .s2-drop-input {
-          width:100%;
-          background:white;
-          border:1.5px solid #e2e8f0;
-          border-radius:0.75rem;
-          padding:0.75rem 1rem 0.75rem 2.5rem;
-          font-size:0.95rem;
-          font-family:'Sora',sans-serif;
-          outline:none;
-          transition:all 0.2s ease;
-          color:#1e293b;
-        }
-        .s2-drop-input::placeholder {
-          color:#94a3b8;
-          font-weight:400;
+          width: 100%;
+          background: white;
+          border: 1px solid #e2e8f0;
+          border-radius: 0.75rem;
+          padding: 0.625rem 1rem 0.625rem 2.5rem;
+          font-size: 0.875rem;
+          font-family: 'Sora', sans-serif;
+          outline: none;
+          transition: all 0.2s ease;
+          color: #1e293b;
         }
         .s2-drop-input:focus {
-          border-color:#60a5fa;
-          box-shadow:0 0 0 4px rgba(96,165,250,0.15);
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
         .s2-drop-clr {
-          position:absolute;
-          right:1.5rem;
-          top:50%;
-          transform:translateY(-50%);
-          color:#64748b;
-          background:white;
-          border:none;
-          cursor:pointer;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          padding:0.25rem;
-          border-radius:9999px;
-          transition:all 0.2s ease;
+          position: absolute;
+          right: 1.5rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.2s;
         }
-        .s2-drop-clr:hover {
-          background:#f1f5f9;
-          color:#334155;
-        }
+        .s2-drop-clr:hover { background: #f1f5f9; color: #64748b; }
 
         /* Liste items */
-        .s2-drop-list{max-height:16rem;overflow-y:auto;overscroll-behavior:contain;background:white;}
-        .s2-drop-list::-webkit-scrollbar{width:5px;}
-        .s2-drop-list::-webkit-scrollbar-track{background:#f8fafc;}
-        .s2-drop-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px;}
+        .s2-drop-list { 
+          max-height: 14rem; 
+          overflow-y: auto; 
+          background: transparent;
+        }
+        .s2-drop-list::-webkit-scrollbar { width: 4px; }
+        .s2-drop-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
         .s2-drop-item {
-          width:100%;padding:.875rem 1.25rem;
-          display:flex;flex-direction:column;gap:.35rem;
-          text-align:left;background:white;border:none;cursor:pointer;
-          transition:background .15s;
+          width: 100%;
+          padding: 0.875rem 1.25rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          text-align: left;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s;
         }
-        .s2-drop-item:hover{background:#f8fafc;}
-        .s2-drop-item.active-blue{background:#eff6ff;}
-        .s2-drop-item.active-green{background:#f0fdf4;}
-        .s2-drop-item.bordered{border-bottom:1px solid #f1f5f9;}
+        .s2-drop-item:hover { background: rgba(59, 130, 246, 0.05); }
+        .s2-drop-item.active-blue { background: rgba(59, 130, 246, 0.08); }
+        .s2-drop-item.active-green { background: rgba(34, 197, 94, 0.08); }
+        .s2-drop-item.bordered { border-bottom: 1px solid rgba(0, 0, 0, 0.02); }
 
-        .s2-drop-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;}
-        .s2-drop-name{font-size:.95rem;font-weight:600;color:#0f172a;}
-        .s2-chk{font-size:1.125rem;flex-shrink:0;}
-        .s2-chk.blue{color:#1250c8;}.s2-chk.green{color:#5E9422;}
-        .s2-badge{display:inline-block;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:.375rem;width:fit-content;}
-        .s2-badge.blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;}
-        .s2-empty{padding:1.5rem 1.25rem;text-align:center;background:white;}
-        .s2-empty p{font-size:.95rem;color:#64748b;margin:0 0 .25rem;}
-        .s2-empty span{font-size:.8rem;color:#94a3b8;}
+        .s2-drop-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+        .s2-drop-name { font-size: 0.875rem; font-weight: 600; color: #1e293b; }
+        .s2-chk { font-size: 1rem; flex-shrink: 0; }
+        .s2-chk.blue { color: #2563eb; }
+        .s2-chk.green { color: #16a34a; }
+
+        .s2-badge {
+          display: inline-block;
+          font-size: 0.625rem;
+          font-weight: 700;
+          padding: 0.125rem 0.5rem;
+          border-radius: 0.5rem;
+          width: fit-content;
+          text-transform: uppercase;
+          letter-spacing: 0.025em;
+        }
+        .s2-badge.blue { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+        
+        .s2-empty { padding: 2rem 1.5rem; text-align: center; color: #64748b; }
+        .s2-empty p { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .s2-empty span { font-size: 0.75rem; opacity: 0.7; }
 
         /* Séparateur */
-        .s2-sep{display:flex;align-items:center;margin:clamp(.75rem,2vw,1.1rem) 0;}
-        .s2-sep-l{flex:1;height:1px;background:rgba(255,255,255,.22);}
-        .s2-sep-txt{padding:0 .875rem;font-size:.6rem;font-weight:900;color:rgba(255,255,255,.75);letter-spacing:.25em;text-transform:uppercase;}
+        .s2-sep { 
+          display: flex; 
+          align-items: center; 
+          margin: 1.5rem 0; 
+          max-width: 450px;
+        }
+        @media(max-width: 1023px) { 
+          .s2-sep { max-width: 100%; width: 100%; }
+        }
+        .s2-sep-l { flex: 1; height: 1px; background: rgba(255, 255, 255, 0.2); }
+        .s2-sep-txt { 
+          padding: 0 1rem; 
+          font-size: 0.65rem; 
+          font-weight: 800; 
+          color: rgba(255, 255, 255, 0.6); 
+          letter-spacing: 0.2em; 
+          text-transform: uppercase; 
+        }
 
         /* Fiche mobile */
         .s2-fiche-mob{margin-bottom:1rem;height:15rem;}
@@ -633,25 +715,50 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-nores{font-size:.875rem;color:rgba(255,255,255,.55);}
 
         /* Footer */
-        .s2-foot{
-          flex-shrink:0;
-          padding:.75rem clamp(1.25rem,5vw,3.5rem) clamp(.875rem,2.5vw,1.25rem);
-          display:flex;flex-direction:column;align-items:center;gap:.625rem;
+        .s2-foot {
+          flex-shrink: 0;
+          padding: 1.5rem clamp(1.25rem, 5vw, 3.5rem);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+          background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
         }
-        .s2-btn-cont{
-          width:100%;max-width:26rem;
-          padding:.875rem 1.5rem;border-radius:.875rem;
-          font-weight:900;font-size:.875rem;text-transform:uppercase;letter-spacing:.08em;
-          background:white;color:#1250c8;border:none;cursor:pointer;
-          box-shadow:0 4px 18px rgba(0,0,0,.12);
-          transition:background .2s,transform .15s,box-shadow .2s;
+        .s2-btn-cont {
+          width: 100%;
+          max-width: 450px;
+          padding: 1rem 1.5rem;
+          border-radius: 1rem;
+          font-weight: 800;
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          background: white;
+          color: #1250c8;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
         }
-        .s2-btn-cont:hover{background:#eff6ff;transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.15);}
-        .s2-btn-home{
-          color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;
-          padding:.5rem;border-radius:.75rem;transition:color .2s,background .2s;
+        .s2-btn-cont:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15);
+          background: #eff6ff;
         }
-        .s2-btn-home:hover{color:white;background:rgba(255,255,255,.1);}
+        .s2-btn-home {
+          color: rgba(255, 255, 255, 0.6);
+          background: rgba(255, 255, 255, 0.05);
+          border: none;
+          cursor: pointer;
+          padding: 0.75rem;
+          border-radius: 1rem;
+          transition: all 0.2s;
+        }
+        .s2-btn-home:hover {
+          color: white;
+          background: rgba(255, 255, 255, 0.15);
+          transform: scale(1.05);
+        }
 
         /* Colonne droite */
         .s2-right{display:none;}
@@ -682,9 +789,9 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         .s2-idle p{color:white;font-size:.875rem;font-weight:600;line-height:1.6;margin:0;}
 
         /* Animations */
-        @keyframes s2In{from{opacity:0;transform:translateX(-14px);}to{opacity:1;transform:translateX(0);}}
-        @keyframes s2FadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
-        .s2-fadein{animation:s2FadeIn .25s cubic-bezier(0.16,1,0.3,1) both;}
+        @keyframes s2In { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes s2FadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .s2-fadein { animation: s2FadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
         /* Scrollbar fiche détail */
         .scrollbar-thin-white::-webkit-scrollbar{width:5px;}

@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiOutlineHome, HiOutlineZoomIn, HiOutlineZoomOut } from "react-icons/hi";
+import { HiOutlineHome } from "react-icons/hi";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
+import { FiMapPin, FiChevronRight } from "react-icons/fi";
 import { searchMetier } from "../../../services/metier.services";
 import {
   getAllEtablissementsCache,
@@ -66,34 +67,6 @@ const NAME_TO_ID = {
   Anosy:                 "anosy",
 };
 
-const GEOJSON_URLS = [
-  "https://raw.githubusercontent.com/wmgeolab/geoBoundaries/main/releaseData/CGAZ/MDG/ADM1/geoBoundaries-MDG-ADM1.geojson",
-  "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_1_states_provinces.geojson",
-];
-
-let geojsonCache = null;
-
-const C = {
-  active:        { fill: "#155faa", stroke: "#0e3d7a", weight: 1.8 },
-  activeHover:   { fill: "#2979c8", stroke: "#1a5299", weight: 2.2 },
-  inactive:      { fill: "#dde8f5", stroke: "#90b8d8", weight: 1.2 },
-  inactiveHover: { fill: "#c5d8ee", stroke: "#6ea4cc", weight: 1.5 },
-};
-
-function buildStyle(id, isHovered, activeRegions) {
-  const isActive = activeRegions.includes(id);
-  const s = isActive
-    ? isHovered ? C.activeHover : C.active
-    : isHovered ? C.inactiveHover : C.inactive;
-  return {
-    fillColor:   s.fill,
-    fillOpacity: 1,
-    color:       s.stroke,
-    weight:      s.weight,
-    opacity:     1,
-  };
-}
-
 function normalizeRegionId(name) {
   return (
     NAME_TO_ID[name] ||
@@ -104,31 +77,23 @@ function normalizeRegionId(name) {
 export default function Section5({ metier, reponseDomaine, onRetour, onSelectRegion }) {
   const navigate = useNavigate();
   const [loading, setLoading]   = useState(true);
-  const [error,   setError]     = useState(null);
-  const [activeRegions,           setActiveRegions]           = useState([]);
+  const [activeRegions, setActiveRegions] = useState([]);
   const [etablissementsParRegion, setEtablissementsParRegion] = useState({});
-
-  const mapRef        = useRef(null);
-  const leafletMapRef = useRef(null);
-  const layersRef     = useRef({});
-  const activeRef     = useRef([]);    
-  const countRef      = useRef({});
-  const mapReadyRef   = useRef(false);  
+  const [regionToProvince, setRegionToProvince] = useState({});
 
   useEffect(() => {
     const loadRegions = async () => {
+      setLoading(true);
       if (!metier?.label && !reponseDomaine) {
-        activeRef.current = [];
-        countRef.current  = {};
         setActiveRegions([]);
         setEtablissementsParRegion({});
+        setRegionToProvince({});
+        setLoading(false);
         return;
       }
 
       try {
-  
         const tous = await getAllEtablissementsCache();
-
         const metierLabel = metier?.label || "";
 
         const filtered = tous.filter((e) => {
@@ -140,22 +105,24 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
 
         const regionsSet    = new Set();
         const countByRegion = {};
+        const regToProv     = {};
 
         filtered.forEach((etab) => {
           if (etab.region) {
             const regionId = normalizeRegionId(etab.region);
             regionsSet.add(regionId);
             countByRegion[regionId] = (countByRegion[regionId] || 0) + 1;
+            // On garde le label original du province
+            if (!regToProv[regionId]) {
+              regToProv[regionId] = etab.province || "Madagascar";
+            }
           }
         });
 
         const newActiveRegions = Array.from(regionsSet);
-
-        activeRef.current = newActiveRegions;
-        countRef.current  = countByRegion;
-
         setActiveRegions(newActiveRegions);
         setEtablissementsParRegion(countByRegion);
+        setRegionToProvince(regToProv);
 
         if (metier?.id && metier?.label) {
           searchMetier(metier.id, metier.label).catch(console.error);
@@ -164,37 +131,14 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         console.error("Erreur chargement régions:", err);
         setActiveRegions([]);
         setEtablissementsParRegion({});
+        setRegionToProvince({});
+      } finally {
+        setLoading(false);
       }
     };
 
     loadRegions();
   }, [metier?.label, metier?.id, reponseDomaine]);
-
-  useEffect(() => {
-    activeRef.current = activeRegions;
-    countRef.current  = etablissementsParRegion;
-  }, [activeRegions, etablissementsParRegion]);
-
-  const applyAllStyles = () => {
-    Object.entries(layersRef.current).forEach(([id, layer]) => {
-      layer.setStyle(buildStyle(id, false, activeRef.current));
-    });
-    Object.entries(layersRef.current).forEach(([id, layer]) => {
-      const label    = REGION_LABELS[id] || id;
-      const isActive = activeRef.current.includes(id);
-      const count    = countRef.current[id] || 0;
-      layer.unbindTooltip();
-      layer.bindTooltip(
-        `<div style="font-family:'Sora',sans-serif;font-size:12px;font-weight:700;padding:4px 10px;line-height:1.6">
-          <span style="color:#ffffff">${label}</span>
-          ${isActive
-            ? `<br/><span style="font-size:10px;font-weight:600;color:#a3c8f0">${count} établissement${count > 1 ? "s" : ""}</span>`
-            : ""}
-        </div>`,
-        { sticky: true, direction: "top", offset: [0, -4] },
-      );
-    });
-  };
 
   const handleSelectRegion = (regionId) => {
     const regionLabel = REGION_LABELS[regionId] || regionId;
@@ -210,276 +154,138 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
     onSelectRegion?.(regionId);
   };
 
-  useEffect(() => {
-    if (!document.getElementById("leaflet-css")) {
-      const link = document.createElement("link");
-      link.id   = "leaflet-css";
-      link.rel  = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-    }
+  const metierLabel = metier?.label || (reponseDomaine ? `Formation en ${reponseDomaine}` : "ce parcours");
 
-    const loadLeaflet = () =>
-      new Promise((resolve) => {
-        if (window.L) return resolve(window.L);
-        const s  = document.createElement("script");
-        s.src    = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-        s.onload = () => resolve(window.L);
-        document.head.appendChild(s);
-      });
-
-    const initMap = async () => {
-      const L = await loadLeaflet();
-      if (!mapRef.current || leafletMapRef.current) return;
-
-      const map = L.map(mapRef.current, {
-        center:           [-20, 46.8],
-        zoom:             5,
-        zoomControl:      false,
-        attributionControl: false,
-        dragging:         true,
-        scrollWheelZoom:  true,
-        doubleClickZoom:  true,
-        touchZoom:        true,
-        renderer:         L.svg({ padding: 0.5 }),
-      });
-      leafletMapRef.current = map;
-
-      let geojsonData = geojsonCache;
-      if (!geojsonData) {
-        for (const url of GEOJSON_URLS) {
-          try {
-            const res  = await fetch(url);
-            if (!res.ok) continue;
-            const data = await res.json();
-            let features = data.features || [];
-            const hasMG  = features.some(
-              (f) =>
-                f.properties?.admin   === "Madagascar" ||
-                f.properties?.iso_a2  === "MG"         ||
-                f.properties?.adm0_a3 === "MDG",
-            );
-            if (hasMG) {
-              features = features.filter(
-                (f) =>
-                  f.properties?.admin   === "Madagascar" ||
-                  f.properties?.iso_a2  === "MG"         ||
-                  f.properties?.adm0_a3 === "MDG",
-              );
-            }
-            if (features.length === 0) continue;
-            geojsonData  = { type: "FeatureCollection", features };
-            geojsonCache = geojsonData;
-            break;
-          } catch (e) {
-            console.warn("GeoJSON failed:", url, e);
-          }
-        }
-      }
-
-      if (!geojsonData) {
-        setError("Impossible de charger la carte.\nVérifiez votre connexion.");
-        setLoading(false);
-        return;
-      }
-
-      const geoLayer = L.geoJSON(geojsonData, {
-        style: (feature) => {
-          const props = feature.properties || {};
-          const name  = props.shapeName || props.name || props.NAME_1 || props.ADM1_EN || "";
-          const id    = normalizeRegionId(name);
-          return buildStyle(id, false, activeRef.current);
-        },
-        onEachFeature: (feature, layer) => {
-          const props = feature.properties || {};
-          const name  = props.shapeName || props.name || props.NAME_1 || props.ADM1_EN || "";
-          const id    = normalizeRegionId(name);
-          layersRef.current[id] = layer;
-
-          const label    = REGION_LABELS[id] || name;
-          const isActive = activeRef.current.includes(id);
-          const count    = countRef.current[id] || 0;
-
-          layer.bindTooltip(
-            `<div style="font-family:'Sora',sans-serif;font-size:12px;font-weight:700;padding:4px 10px;line-height:1.6">
-              <span style="color:#ffffff">${label}</span>
-              ${isActive
-                ? `<br/><span style="font-size:10px;font-weight:600;color:#a3c8f0">${count} établissement${count > 1 ? "s" : ""}</span>`
-                : ""}
-            </div>`,
-            { sticky: true, direction: "top", offset: [0, -4] },
-          );
-
-          layer.on("click", () => {
-            if (!activeRef.current.includes(id)) return;
-            handleSelectRegion(id);
-          });
-
-          layer.on("mouseover", () => {
-            layer.setStyle(buildStyle(id, true, activeRef.current));
-            const el = layer.getElement?.();
-            if (el) el.style.cursor = activeRef.current.includes(id) ? "pointer" : "default";
-          });
-
-          layer.on("mouseout", () => {
-            layer.setStyle(buildStyle(id, false, activeRef.current));
-          });
-        },
-      }).addTo(map);
-
-      map.fitBounds(geoLayer.getBounds(), { padding: [60, 60], maxZoom: 8 });
-
-
-      mapReadyRef.current = true;
-      setLoading(false);
-
-      if (activeRef.current.length > 0) {
-        applyAllStyles();
-      }
-    };
-
-    initMap();
-
-    return () => {
-      if (leafletMapRef.current) {
-        leafletMapRef.current.remove();
-        leafletMapRef.current = null;
-        layersRef.current     = {};
-        mapReadyRef.current   = false;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (leafletMapRef.current && mapReadyRef.current) {
-      applyAllStyles();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRegions.join(","), JSON.stringify(etablissementsParRegion)]);
-
-  const zoomIn  = () => leafletMapRef.current?.zoomIn();
-  const zoomOut = () => leafletMapRef.current?.zoomOut();
-
-  const activeCount = activeRegions.length;
-  const metierLabel = metier?.label || "ce parcours";
+  // On ne garde que les régions qui ont des résultats
+  const sortedRegionIds = [...activeRegions].sort((a, b) => 
+    REGION_LABELS[a].localeCompare(REGION_LABELS[b])
+  );
 
   return (
-    <div className="relative w-full h-screen overflow-hidden font-['Sora']">
+    <div className="relative w-full h-screen overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">
       <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
       />
 
-      {/* ── Fond dégradé ── */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0d47c4] via-[#1a7ec0] via-[#1ea8a8] via-[#60c030] to-[#9ed820]" />
-
       {/* ── Déco cercles ── */}
-      <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5 pointer-events-none z-[1]" />
-      <div className="absolute top-1/3 -left-20 w-80 h-80 rounded-full bg-blue-500/20 pointer-events-none z-[1]" />
+      <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5 pointer-events-none z-0" />
+      <div className="absolute top-1/2 -left-20 w-80 h-80 rounded-full bg-blue-500/10 pointer-events-none z-0" />
 
       {/* ── Silhouette ville bas ── */}
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-[2] opacity-10">
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-0 opacity-10">
         <svg width="100%" height="90" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax meet" fill="none">
           <rect x="8"   y="45" width="28" height="45" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="42"  y="26" width="38" height="64" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="50"  y="14" width="22" height="12" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="86"  y="34" width="26" height="56" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="118" y="18" width="48" height="72" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="130" y="6"  width="24" height="12" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="172" y="30" width="34" height="60" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="212" y="44" width="26" height="46" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="244" y="28" width="40" height="62" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="290" y="40" width="28" height="50" stroke="white" strokeWidth="1.2" fill="none" />
-          <rect x="324" y="50" width="22" height="40" stroke="white" strokeWidth="1.2" fill="none" />
           <rect x="352" y="36" width="36" height="54" stroke="white" strokeWidth="1.2" fill="none" />
         </svg>
       </div>
 
-      {/* ── Carte Leaflet (plein écran) ── */}
-      <div className="absolute inset-0 z-10">
-        <div ref={mapRef} className="w-full h-full" />
-      </div>
-
-      {/* ── Bouton Retour ── */}
-      <div className="absolute top-5 left-5 z-20 pointer-events-none">
-        <div className="pointer-events-auto">
+      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between mb-0">
           <button
             onClick={onRetour}
-            className="text-white/85 hover:text-white transition-colors drop-shadow-lg"
+            className="text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
             aria-label="Retour"
           >
-            <IoArrowBackCircleOutline size={46} />
+            <IoArrowBackCircleOutline size={42} />
           </button>
         </div>
-      </div>
 
-      {/* ── Panneau info gauche ── */}
-      <div className="absolute top-[82px] left-5 z-20 pointer-events-none max-w-[190px]">
-        <h1 className="text-4xl lg:text-5xl font-black text-white leading-none drop-shadow-md">
-          Régions
-        </h1>
-        <p className="text-xs text-white/80 font-semibold mt-1.5 leading-snug line-clamp-2 drop-shadow">
-          {metierLabel}
-        </p>
+        {/* Titre giant */}
+        <div className="mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+            Choisir une<br />Région
+          </h1>
+          <p className="text-xs sm:text-sm text-white/60 font-bold tracking-widest uppercase">
+            {activeRegions.length} région{activeRegions.length > 1 ? "s" : ""} disponible{activeRegions.length > 1 ? "s" : ""}
+          </p>
+        </div>
 
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <span
-              className="w-4 h-4 rounded-sm shrink-0 shadow-sm"
-              style={{
-                background: C.active.fill,
-                border:     `1.5px solid ${C.active.stroke}`,
-              }}
-            />
-            <span className="text-[11px] text-white font-bold drop-shadow">
-              {activeCount} région{activeCount > 1 ? "s" : ""} disponible{activeCount > 1 ? "s" : ""}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className="w-4 h-4 rounded-sm shrink-0"
-              style={{
-                background: C.inactive.fill,
-                border:     `1.5px solid ${C.inactive.stroke}`,
-              }}
-            />
-            <span className="text-[11px] text-white/65 font-medium">
-              Non disponible
-            </span>
+        {/* Info parcours */}
+        <div className="mb-6">
+          <p className="text-xs text-white/70 font-semibold mb-1">Métier sélectionné :</p>
+          <div className="inline-block bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
+            <p className="text-white font-bold text-sm leading-tight">{metierLabel}</p>
           </div>
         </div>
 
-        <p className="text-[11px] text-white/55 mt-3 leading-relaxed">
-          Cliquez sur une<br />région bleue pour voir<br />les établissements
-        </p>
-      </div>
+        {/* Zone scrollable des régions */}
+        <div className="flex-1 min-h-0 overflow-y-auto py-2 scrollbar-hide">
+          {loading ? (
+             <div className="flex flex-col items-center justify-center h-full gap-4">
+                <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+                <p className="text-white font-bold text-sm">Chargement des régions…</p>
+             </div>
+          ) : sortedRegionIds.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-w-6xl mx-auto">
+              {sortedRegionIds.map((id) => {
+                const count = etablissementsParRegion[id] || 0;
+                const label = REGION_LABELS[id];
+                const province = regionToProvince[id];
 
-      {/* ── Zoom ── */}
-      <div className="absolute right-5 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
-        <div className="pointer-events-auto flex flex-col gap-3">
-          <button
-            onClick={zoomIn}
-            className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur-sm text-white shadow-lg"
-            aria-label="Zoom in"
-          >
-            <HiOutlineZoomIn size={22} />
-          </button>
-          <button
-            onClick={zoomOut}
-            className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur-sm text-white shadow-lg"
-            aria-label="Zoom out"
-          >
-            <HiOutlineZoomOut size={22} />
-          </button>
+                return (
+                  <button
+                    key={id}
+                    onClick={() => handleSelectRegion(id)}
+                    className="group relative overflow-hidden rounded-2xl p-4 transition-all duration-300 flex flex-col gap-2 bg-white/15 hover:bg-white/25 border-white/40 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+                    style={{ border: "1px solid" }}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                       <div className="flex items-center gap-2">
+                          <FiMapPin size={16} className="text-white" />
+                          <div className="text-left">
+                            <span className="font-bold text-sm text-white block leading-tight">{label}</span>
+                            <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">{province}</span>
+                          </div>
+                       </div>
+                       <FiChevronRight size={14} className="text-white/50 group-hover:text-white transition-colors" />
+                    </div>
+                    
+                    <div className="mt-1">
+                        <p className="text-[11px] font-bold text-white/80">
+                          {count} établissement{count > 1 ? "s" : ""}
+                        </p>
+                    </div>
+
+                    {/* Effet au survol */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 backdrop-blur-md">
+                <FiMapPin size={32} className="text-white/40" />
+              </div>
+              <p className="text-white font-black text-xl mb-2">Aucun établissement trouvé</p>
+              <p className="text-white/60 text-sm max-w-xs mx-auto">
+                Désolé, nous n'avons trouvé aucun établissement pour cette formation dans les régions répertoriées.
+              </p>
+              <button 
+                onClick={onRetour}
+                className="mt-6 px-6 py-3 bg-white text-[#1250c8] rounded-full font-bold text-sm hover:shadow-lg transition-all active:scale-95"
+              >
+                Retour
+              </button>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* ── Home ── */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <div className="pointer-events-auto">
+        {/* Footer */}
+        <div className="shrink-0 flex justify-center pt-4 pb-2">
           <button
             onClick={() => navigate("/acceuil/orientation")}
-            className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur-sm text-white shadow-lg"
+            className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-md text-white border border-white/20"
             aria-label="Accueil"
           >
             <HiOutlineHome size={26} />
@@ -487,57 +293,9 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         </div>
       </div>
 
-      {/* ── Loading / Error overlay ── */}
-      {(loading || error) && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/25 backdrop-blur-sm">
-          {loading && (
-            <>
-              <div className="w-9 h-9 border-[3px] border-white/20 border-t-white rounded-full animate-spin mb-3" />
-              <p className="text-sm font-semibold text-white">
-                Chargement de la carte…
-              </p>
-            </>
-          )}
-          {error && !loading && (
-            <p className="text-sm font-semibold text-red-200 text-center bg-black/40 px-5 py-3 rounded-2xl whitespace-pre-line">
-              {error}
-            </p>
-          )}
-        </div>
-      )}
-
       <style>{`
-        .leaflet-container {
-          background: transparent !important;
-          font-family: 'Sora', sans-serif !important;
-        }
-        .leaflet-pane,
-        .leaflet-overlay-pane,
-        .leaflet-map-pane,
-        .leaflet-tile-pane {
-          background: transparent !important;
-        }
-        .leaflet-control-attribution { display: none !important; }
-        .leaflet-overlay-pane svg { shape-rendering: geometricPrecision !important; }
-        .leaflet-overlay-pane path {
-          shape-rendering: geometricPrecision !important;
-          vector-effect: non-scaling-stroke !important;
-          outline: none !important;
-        }
-        .leaflet-overlay-pane path:focus,
-        .leaflet-interactive:focus {
-          outline: none !important;
-          box-shadow: none !important;
-        }
-        .leaflet-tooltip {
-          background: rgba(8,20,60,0.90) !important;
-          border: 1px solid rgba(255,255,255,0.18) !important;
-          color: white !important;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.35) !important;
-          border-radius: 10px !important;
-          padding: 2px 0 !important;
-        }
-        .leaflet-tooltip::before { display: none !important; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   );

@@ -3,7 +3,7 @@ import { IoArrowBackCircleOutline } from "react-icons/io5";
 import { HiOutlineHome, HiChevronDown, HiCheck } from "react-icons/hi";
 import { HiOutlineSearch } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import { getAllMentions } from "../../../services/mention.services";
+import { getAllDomaines } from "../../../services/domaine.services";
 
 function GradBg() {
   return (
@@ -39,33 +39,33 @@ function GradBg() {
 
 export default function Section8({ onSuivant, onRetour }) {
   const navigate    = useNavigate();
-  const [allMentions, setAllMentions] = useState([]);
+  const [allDomaines, setAllDomaines] = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [open,        setOpen]        = useState(false);
   const [search,      setSearch]      = useState("");
   const [selected,    setSelected]    = useState(null); 
 
   useEffect(() => {
-    const loadMentions = async () => {
+    const loadDomaines = async () => {
       try {
-        const mentions = await getAllMentions();
-        setAllMentions(mentions);
+        const domaines = await getAllDomaines();
+        setAllDomaines(domaines);
       } catch (error) {
-        console.error("Erreur chargement mentions:", error);
-        setAllMentions([]);
+        console.error("Erreur chargement domaines:", error);
+        setAllDomaines([]);
       } finally {
         setLoading(false);
       }
     };
-    loadMentions();
+    loadDomaines();
   }, []);
 
   const domaineOptions = useMemo(() => {
-    return allMentions.map((m) => ({
-      value: m.id || m.label,
-      label: m.label,
+    return allDomaines.map((d) => ({
+      value: d.id || d.label,
+      label: d.label,
     }));
-  }, [allMentions]);
+  }, [allDomaines]);
 
   const filteredOptions = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -104,24 +104,26 @@ export default function Section8({ onSuivant, onRetour }) {
         {/* Retour */}
         <button
           onClick={onRetour}
-          className="self-start shrink-0 text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center"
+          className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={38} />
+          <IoArrowBackCircleOutline size={42} />
         </button>
 
-        {/* Contenu scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto py-2 scrollbar-hide">
-          <div className="flex flex-col items-start w-full max-w-lg">
+        {/* Zone scrollable - centrée verticalement et horizontalement */}
+        <div className="flex-1 min-h-0 overflow-y-auto py-4 scrollbar-hide flex flex-col justify-center items-center">
+          <div className="flex flex-col items-center text-center w-full max-w-lg">
 
-            <h1 className="text-5xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-4">
-              Explorer par<br />domaine
-            </h1>
+            <div className={`transition-all duration-500 ease-in-out ${open ? "-translate-y-12 opacity-30" : "translate-y-0 opacity-100"}`}>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-4">
+                Explorer par<br />domaine
+              </h1>
 
-            <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-md mb-6">
-              Sélectionne le domaine qui t'intéresse pour découvrir
-              immédiatement les métiers disponibles.
-            </p>
+              <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-xs sm:max-w-md mb-6">
+                Sélectionne le domaine qui t'intéresse pour découvrir
+                immédiatement les métiers disponibles.
+              </p>
+            </div>
 
             {/* ✅ FIX : Combobox inline — sélection = navigation directe */}
             <div className="w-full max-w-sm relative">

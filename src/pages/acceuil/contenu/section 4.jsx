@@ -269,7 +269,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
   return (
     <div
-      className="relative w-full min-h-screen overflow-y-auto font-['Sora'] flex flex-col"
+      className="relative w-full h-screen overflow-hidden font-['Sora'] flex flex-col"
       style={{
         background:
           "linear-gradient(135deg,#1250c8 0%,#1a6dcc 20%,#28b090 55%,#a0d820 80%,#c2e832 100%)",
@@ -312,24 +312,24 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
       </div>
 
       {/* Conteneur principal avec flex column et min-height */}
-      <div className="relative z-10 flex-1 flex flex-col min-h-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
         {/* Bouton retour */}
         <button
           onClick={onRetour}
-          className="text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center mb-4 flex-shrink-0"
+          className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center mb-4 p-0"
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={38} />
+          <IoArrowBackCircleOutline size={42} />
         </button>
 
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1">
           <div className="mb-6">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-3">
               UNIVERSITÉS<br className="sm:hidden" />&amp; INSTITUTS
             </h1>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-block bg-white/90 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-gray-800">
+              <span className="inline-block bg-white/20 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-white">
                 {mentionLabel}
               </span>
               {regionLabel && (
@@ -472,10 +472,10 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         </div>
 
         {/* Icône Home fixée en bas */}
-        <div className="flex justify-center pt-4 pb-2 flex-shrink-0">
+        <div className="shrink-0 flex justify-center pt-4 pb-2">
           <button
             onClick={() => navigate("/acceuil/orientation")}
-            className="text-white/70 hover:text-white transition-colors"
+            className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-md text-white border border-white/20"
             aria-label="Accueil"
           >
             <HiOutlineHome size={26} />

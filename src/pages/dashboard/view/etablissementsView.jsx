@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
   FaPlus, FaEdit, FaTrash, FaSearch,
-  FaTimes, FaExclamationTriangle
+  FaTimes, FaExclamationTriangle, FaPlusCircle
 } from "react-icons/fa";
 import { 
   Download, FileSpreadsheet, FileText,
@@ -23,6 +23,7 @@ import {
 import { getAllMentions } from "../../../services/mention.services";
 import { getAllParcours } from "../../../services/parcours.services";
 import { getAllMetiers } from "../../../services/metier.services";
+import { getAllDomaines } from "../../../services/domaine.services";
 
 // ── Données statiques Madagascar ───────────────────────────────────────────
 const provinceRegions = {
@@ -54,7 +55,8 @@ const emptyForm = {
   region:    "",
   type:      "Public",
   mention:   "",
-  parcours:  "",
+  domaine:   "",
+  parcours:  [],
   metier:    "",
   niveau:    "",
   duree:     "",
@@ -118,47 +120,9 @@ const ExportMenu = ({ onExport, filteredEtablissements }) => {
 };
 
 // ── FloatInput (version animée) avec astérisque rouge ─────────────────────────
-const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows, options = [] }) => {
-  if (type === "select") {
-    return (
-      <div className="relative">
-        <select
-          id={id}
-          name={name}
-          value={value}
-          onChange={onChange}
-          disabled={disabled}
-          className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer
-            ${error ? "border-red-500" : "border-gray-300 focus:border-blue-600"}
-            ${disabled ? "bg-gray-50 cursor-not-allowed" : ""} ${className}`}
-        >
-          <option value="">Sélectionner</option>
-          {options.map(opt => (
-            <option key={opt.value || opt} value={opt.value || opt}>
-              {opt.label || opt}
-            </option>
-          ))}
-        </select>
-        <label
-          htmlFor={id}
-          className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5
-            peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4
-            ${error ? "text-red-500" : "text-gray-500 peer-focus:text-blue-600"}`}
-        >
-          {label.includes('*') ? (
-            <>
-              {label.replace('*', '')}
-              <span className="text-red-500 ml-0.5">*</span>
-            </>
-          ) : label}
-        </label>
-        {error && <p className="text-[10px] text-red-500 absolute -bottom-5 left-0">{error}</p>}
-      </div>
-    );
-  }
-
+const FloatInput = ({ id, name, label, value, onChange, type = "text", error, disabled, className = "", min, maxLength, rows }) => {
   const InputComponent = type === "textarea" ? "textarea" : "input";
-  
+
   return (
     <div className="relative">
       <InputComponent
@@ -190,6 +154,101 @@ const FloatInput = ({ id, name, label, value, onChange, type = "text", error, di
         ) : label}
       </label>
       {error && <p className="text-[10px] text-red-500 absolute -bottom-5 left-0">{error}</p>}
+    </div>
+  );
+};
+
+// ── SearchableSelect Component ──────────────────────────────────────────────
+const SearchableSelect = ({ label, value, options, onChange, disabled, error, id }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef(null);
+
+  const filteredOptions = useMemo(() => {
+    return options.filter(opt =>
+      (opt.label || opt).toLowerCase().includes(search.toLowerCase())
+    );
+  }, [options, search]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => (opt.value || opt) === value);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <div
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 cursor-pointer transition-colors
+          ${error ? "border-red-500" : isOpen ? "border-blue-600" : "border-gray-300"}
+          ${disabled ? "bg-gray-50 cursor-not-allowed text-gray-400" : ""}`}
+      >
+        <span className="block truncate">
+          {selectedOption ? (selectedOption.label || selectedOption) : "Sélectionner..."}
+        </span>
+        <ChevronDown
+          size={14}
+          className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 text-gray-400 ${isOpen ? 'rotate-180' : ''}`}
+        />
+        <label
+          htmlFor={id}
+          className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5 pointer-events-none
+            ${selectedOption || isOpen ? "scale-75 -translate-y-4" : ""}
+            ${error ? "text-red-500" : isOpen ? "text-blue-600" : "text-gray-500"}`}
+        >
+          {label.includes('*') ? (
+            <>
+              {label.replace('*', '')}
+              <span className="text-red-500 ml-0.5">*</span>
+            </>
+          ) : label}
+        </label>
+      </div>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden max-h-60 flex flex-col">
+          <div className="p-2 border-b border-gray-100 sticky top-0 bg-white">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+              <input
+                type="text"
+                className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-100 rounded-md focus:outline-none focus:border-blue-500"
+                placeholder="Rechercher..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt, i) => (
+                <div
+                  key={i}
+                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors
+                    ${(opt.value || opt) === value ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"}`}
+                  onClick={() => {
+                    onChange({ target: { name: id, value: (opt.value || opt) } });
+                    setIsOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  {opt.label || opt}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-sm text-gray-400 text-center italic">Aucun résultat</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -226,9 +285,9 @@ const BtnCancel  = ({ onClick }) => (
   <button type="button" onClick={onClick} className="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 text-xs font-semibold">Annuler</button>
 );
 const BtnPrimary = ({ onClick, children, loading, disabled }) => (
-  <button 
-    type="button" 
-    onClick={onClick} 
+  <button
+    type="button"
+    onClick={onClick}
     disabled={disabled || loading}
     className={`px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:brightness-110 transition-colors ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
   >
@@ -242,9 +301,10 @@ const BtnPrimary = ({ onClick, children, loading, disabled }) => (
 );
 
 // ── Modale établissement ─────────────────────────────────────────────────────
-const EtablissementModal = ({ 
-  isEditing, formData, onClose, onSubmit, onChange, onProvinceChange, onNiveauChange, loadingSave, isFormValid,
-  mentionOptions, parcoursOptions, metierOptions
+const EtablissementModal = ({
+  isEditing, formData, onClose, onSubmit, onChange, onProvinceChange, onNiveauChange, onDomaineChange, onMetierChange,
+  loadingSave, isFormValid, mentionOptions, domaineOptions, parcoursOptions, metierOptions,
+  newParcours, setNewParcours, handleAddParcours, handleRemoveParcours
 }) => {
   const handleSubmit = (e) => { e.preventDefault(); onSubmit(); };
 
@@ -264,7 +324,7 @@ const EtablissementModal = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Nom (pleine largeur) */}
           <div className="md:col-span-2">
-            <FloatInput 
+            <FloatInput
               id="nom"
               name="nom"
               label="Nom de l'établissement *"
@@ -274,41 +334,35 @@ const EtablissementModal = ({
           </div>
 
           {/* Province */}
-          <FloatInput 
+          <SearchableSelect
             id="province"
-            name="province"
             label="Province *"
-            type="select"
             value={formData.province}
-            onChange={(e) => onProvinceChange(e.target.value)}
             options={provinceOptions}
+            onChange={(e) => onProvinceChange(e.target.value)}
           />
 
           {/* Région */}
-          <FloatInput 
+          <SearchableSelect
             id="region"
-            name="region"
             label="Région *"
-            type="select"
             value={formData.region}
+            options={formData.province ? provinceRegions[formData.province] : []}
             onChange={(e) => onChange('region')(e)}
             disabled={!formData.province}
-            options={formData.province ? provinceRegions[formData.province] : []}
           />
 
           {/* Type */}
-          <FloatInput 
+          <SearchableSelect
             id="type"
-            name="type"
             label="Type *"
-            type="select"
             value={formData.type}
-            onChange={(e) => onChange('type')(e)}
             options={typeOptions}
+            onChange={(e) => onChange('type')(e)}
           />
 
           {/* Contact */}
-          <FloatInput 
+          <FloatInput
             id="contact"
             name="contact"
             label="Contact *"
@@ -317,47 +371,95 @@ const EtablissementModal = ({
           />
 
           {/* Mention */}
-          <FloatInput 
+          <SearchableSelect
             id="mention"
-            name="mention"
             label="Mention *"
-            type="select"
             value={formData.mention}
-            onChange={(e) => onChange('mention')(e)}
             options={mentionOptions.map(m => ({ value: m.label, label: m.label }))}
+            onChange={(e) => onChange('mention')(e)}
           />
 
-          {/* Parcours */}
-          <FloatInput 
-            id="parcours"
-            name="parcours"
-            label="Parcours *"
-            type="select"
-            value={formData.parcours}
-            onChange={(e) => onChange('parcours')(e)}
-            options={parcoursOptions.map(p => ({ value: p.label, label: p.label }))}
+          {/* Domaine */}
+          <SearchableSelect
+            id="domaine"
+            label="Domaine *"
+            value={formData.domaine}
+            onChange={(e) => onDomaineChange(e.target.value)}
+            options={domaineOptions.map(d => ({ value: d.label, label: d.label }))}
+            disabled={!!formData.metier}
           />
 
           {/* Métier */}
-          <FloatInput 
+          <SearchableSelect
             id="metier"
-            name="metier"
             label="Métier *"
-            type="select"
             value={formData.metier}
-            onChange={(e) => onChange('metier')(e)}
             options={metierOptions.map(m => ({ value: m.label, label: m.label }))}
+            onChange={(e) => onMetierChange(e.target.value)}
           />
 
+          {/* Parcours de formation */}
+          <div className="md:col-span-2 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+              Parcours de formation <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Vous pouvez ajouter plusieurs parcours)</span>
+            </h3>
+
+            {/* Liste des parcours ajoutés */}
+            <div className="flex flex-wrap gap-2 min-h-[80px] p-4 bg-gray-50 rounded-lg border border-gray-200">
+              {formData.parcours.map((parcours, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <span className="text-sm text-gray-700 font-medium">{parcours}</span>
+                  <button
+                    onClick={() => handleRemoveParcours(parcours)}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                    type="button"
+                  >
+                    <FaTimes size={14} />
+                  </button>
+                </div>
+              ))}
+              {formData.parcours.length === 0 && (
+                <span className="text-gray-400 text-sm w-full text-center py-4">
+                  Aucun parcours de formation ajouté
+                </span>
+              )}
+            </div>
+
+            {/* Ajout d'un nouveau parcours */}
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <SearchableSelect
+                  id="newParcours"
+                  label="Sélectionner un parcours"
+                  value={newParcours}
+                  options={parcoursOptions
+                    .filter((p) => !formData.parcours.includes(p.label))
+                    .map((p) => ({ value: p.label, label: p.label }))}
+                  onChange={(e) => setNewParcours(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={handleAddParcours}
+                className="px-6 py-2.5 h-[54px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors whitespace-nowrap text-sm font-medium self-end"
+                type="button"
+              >
+                <FaPlusCircle size={16} />
+                Ajouter
+              </button>
+            </div>
+          </div>
+
           {/* Niveau */}
-          <FloatInput 
+          <SearchableSelect
             id="niveau"
-            name="niveau"
             label="Niveau *"
-            type="select"
             value={formData.niveau}
-            onChange={(e) => onNiveauChange(e.target.value)}
             options={niveauOptions}
+            onChange={(e) => onNiveauChange(e.target.value)}
           />
 
           {/* Durée */}
@@ -387,14 +489,12 @@ const EtablissementModal = ({
           </div>
 
           {/* Admission */}
-          <FloatInput 
+          <SearchableSelect
             id="admission"
-            name="admission"
             label="Admission *"
-            type="select"
             value={formData.admission}
-            onChange={(e) => onChange('admission')(e)}
             options={admissionOptions}
+            onChange={(e) => onChange('admission')(e)}
           />
         </div>
       </form>
@@ -464,6 +564,7 @@ const EtablissementCard = ({ etablissement, onEdit, onDelete }) => (
       <Pill tone={etablissement.type === "Public" ? "green" : "purple"}>
         {etablissement.type}
       </Pill>
+      <Pill tone="blue">{etablissement.domaine}</Pill>
       <Pill tone="blue">{etablissement.niveau}</Pill>
       <Pill tone="orange">{etablissement.admission}</Pill>
     </div>
@@ -636,6 +737,7 @@ const exportToPDF = (data) => {
 export default function EtablissementsView() {
   const [etablissements, setEtablissements] = useState([]);
   const [mentionOptions, setMentionOptions] = useState([]);
+  const [domaineOptions, setDomaineOptions] = useState([]);
   const [parcoursOptions, setParcoursOptions] = useState([]);
   const [metierOptions, setMetierOptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -652,6 +754,7 @@ export default function EtablissementsView() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
   
   const [formData, setFormData] = useState(emptyForm);
+  const [newParcours, setNewParcours] = useState("");
 
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -670,15 +773,17 @@ export default function EtablissementsView() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [etablissementsData, mentionsData, parcoursData, metiersData] =
+      const [etablissementsData, mentionsData, domainesData, parcoursData, metiersData] =
         await Promise.all([
           getAllEtablissements(searchTerm),
           getAllMentions(),
+          getAllDomaines(),
           getAllParcours(),
           getAllMetiers(),
         ]);
       setEtablissements(etablissementsData);
       setMentionOptions(mentionsData);
+      setDomaineOptions(domainesData);
       setParcoursOptions(parcoursData);
       setMetierOptions(metiersData);
     } catch (error) {
@@ -763,7 +868,8 @@ export default function EtablissementsView() {
     formData.region !== "" &&
     formData.type !== "" &&
     formData.mention !== "" &&
-    formData.parcours !== "" &&
+    formData.domaine !== "" &&
+    formData.parcours.length > 0 &&
     formData.metier !== "" &&
     formData.niveau !== "" &&
     formData.admission !== "" &&
@@ -789,6 +895,41 @@ export default function EtablissementsView() {
     });
   };
 
+  const handleDomaineChange = (domaine) => {
+    setFormData({ ...formData, domaine, metier: "", parcours: [] });
+  };
+
+  const handleMetierChange = (metierLabel) => {
+    const metierObj = metierOptions.find(m => m.label === metierLabel);
+    if (metierObj) {
+      setFormData({ 
+        ...formData, 
+        metier: metierLabel, 
+        domaine: metierObj.domaine || formData.domaine,
+        parcours: Array.isArray(metierObj.parcours) ? metierObj.parcours : []
+      });
+    } else {
+      setFormData({ ...formData, metier: metierLabel });
+    }
+  };
+
+  const handleAddParcours = () => {
+    if (newParcours && !formData.parcours.includes(newParcours)) {
+      setFormData({
+        ...formData,
+        parcours: [...formData.parcours, newParcours]
+      });
+      setNewParcours("");
+    }
+  };
+
+  const handleRemoveParcours = (pToRemove) => {
+    setFormData({
+      ...formData,
+      parcours: formData.parcours.filter(p => p !== pToRemove)
+    });
+  };
+
   // ── Ouvrir modal ───────────────────────────────────────────────────
   const handleOpenModal = (etab = null) => {
     if (etab) {
@@ -799,7 +940,8 @@ export default function EtablissementsView() {
         region: etab.region,
         type: etab.type,
         mention: etab.mention,
-        parcours: etab.parcours,
+        domaine: etab.domaine || "",
+        parcours: Array.isArray(etab.parcours) ? etab.parcours : [],
         metier: etab.metier,
         niveau: etab.niveau,
         duree: etab.duree,
@@ -899,7 +1041,9 @@ export default function EtablissementsView() {
     { key: 'province', label: 'Province' },
     { key: 'region', label: 'Région' },
     { key: 'type', label: 'Type' },
+    { key: 'domaine', label: 'Domaine' },
     { key: 'mention', label: 'Mention' },
+    { key: 'parcours', label: 'Parcours' },
     { key: 'niveau', label: 'Niveau' },
   ];
 
@@ -918,11 +1062,21 @@ export default function EtablissementsView() {
           onChange={handleInputChange}
           onProvinceChange={handleProvinceChange}
           onNiveauChange={handleNiveauChange}
+          onDomaineChange={handleDomaineChange}
+          onMetierChange={handleMetierChange}
           loadingSave={loadingSave}
           isFormValid={isFormValid}
           mentionOptions={mentionOptions}
+          domaineOptions={domaineOptions}
           parcoursOptions={parcoursOptions}
-          metierOptions={metierOptions}
+          metierOptions={formData.domaine 
+            ? metierOptions.filter(m => m.domaine === formData.domaine || !m.domaine)
+            : metierOptions
+          }
+          newParcours={newParcours}
+          setNewParcours={setNewParcours}
+          handleAddParcours={handleAddParcours}
+          handleRemoveParcours={handleRemoveParcours}
         />
       )}
       
@@ -1099,7 +1253,15 @@ export default function EtablissementsView() {
                         {etab.type}
                       </Pill>
                     </td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{etab.domaine}</td>
                     <td className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap">{etab.mention}</td>
+                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                      <div className="flex flex-wrap gap-1 max-w-[200px] justify-center">
+                        {Array.isArray(etab.parcours) && etab.parcours.length > 0 ? etab.parcours.map((p, i) => (
+                          <Pill key={i} tone="blue">{p}</Pill>
+                        )) : <Pill tone="gray">-</Pill>}
+                      </div>
+                    </td>
                     <td className="px-3 py-3 text-center whitespace-nowrap">
                       <Pill tone="blue">{etab.niveau}</Pill>
                     </td>

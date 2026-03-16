@@ -40,13 +40,20 @@ export const createMetier = async (data) => {
     description:       data.description,
     parcours:          data.parcours,
     mention:           data.mention,
+    domaine:           data.domaine,
     serie:             data.serie,
     niveau:            data.niveau,
     parcoursFormation: data.parcoursFormation,
   });
+
+  // ✅ Log pour voir exactement ce que PHP répond
+  console.log("=== [createMetier] response.status ===", response.status);
+  console.log("=== [createMetier] response.data ===", JSON.stringify(response.data, null, 2));
+
   invalidateMetiersCache();
-  return response.data.metier;
+  return response.data.metier || response.data || null;
 };
+
 
 export const updateMetier = async (id, data) => {
   const response = await API.put(`/metiers/${id}`, {
@@ -54,6 +61,7 @@ export const updateMetier = async (id, data) => {
     description:       data.description,
     parcours:          data.parcours,
     mention:           data.mention,
+    domaine:           data.domaine,
     serie:             data.serie,
     niveau:            data.niveau,
     parcoursFormation: data.parcoursFormation,

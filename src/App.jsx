@@ -12,6 +12,7 @@ import MetiersView from "./pages/dashboard/view/metiersView.jsx";
 import ParcoursView from "./pages/dashboard/view/parcoursView.jsx";
 import MentionsView from "./pages/dashboard/view/mentionsView.jsx";
 import SeriesView from "./pages/dashboard/view/seriesView.jsx";
+import DomainesView from "./pages/dashboard/view/domainesView.jsx";
 import EtablissementsView from "./pages/dashboard/view/etablissementsView.jsx";
 import NotFound404 from "../src/pages/error/NotFound404.jsx";
 
@@ -96,12 +97,14 @@ function App() {
           <Route path="/" element={<LoadingPage />} />
 
           {/* Routes publiques */}
-          <Route path="/acceuil/*" element={<Acceuil />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/acceuil/:uuid/*" element={<Acceuil />} />
+          <Route path="/acceuil/*" element={<Navigate to={`/acceuil/${Math.random().toString(36).substring(2, 11)}/orientation`} replace />} />
+          <Route path="/login/:uuid" element={<Login />} />
+          <Route path="/login" element={<Navigate to={`/login/${Math.random().toString(36).substring(2, 11)}`} replace />} />
 
           {/* Routes protégées - Dashboard Admin */}
           <Route
-            path="/dashboard/admin"
+            path="/dashboard/admin/:uuid"
             element={
               <ProtectedRoute>
                 <DashboardAdmin />
@@ -110,6 +113,7 @@ function App() {
           >
             <Route index element={<DashboardAdminView />} />
             <Route path="profile" element={<ProfileView />} />
+            <Route path="parametres/domaine" element={<DomainesView />} />
             <Route path="parametres/metier" element={<MetiersView />} />
             <Route path="parametres/parcours" element={<ParcoursView />} />
             <Route path="parametres/mention" element={<MentionsView />} />

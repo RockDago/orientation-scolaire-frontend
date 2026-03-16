@@ -49,34 +49,33 @@ export default function Section6({ onCommencer, onRetour }) {
         {/* Back button aligné à gauche */}
         <button 
           onClick={onRetour} 
-          className="self-start text-white/80 hover:text-white transition-colors w-11 h-11 flex items-center justify-center" 
+          className="self-start text-white/80 hover:text-white transition-colors flex items-center justify-center p-0" 
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={38} />
+          <IoArrowBackCircleOutline size={42} />
         </button>
 
-        {/* Zone de contenu scrollable */}
-        <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
-          {/* Contenu aligné à gauche */}
-          <div className="flex flex-col items-start w-full max-w-2xl">
+        {/* Zone de contenu scrollable - centrée verticalement et horizontalement sur mobile */}
+        <div className="flex-1 overflow-y-auto py-4 scrollbar-hide flex flex-col justify-center items-center">
+          {/* Contenu centré */}
+          <div className="flex flex-col items-center text-center w-full max-w-2xl">
             {/* Titre aligné à gauche - taille comme section 7 */}
-            <h1 className="text-5xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight tracking-tight mb-4">
               TROUVER<br />MON ORIENTATION
             </h1>
             
-            {/* Sous-texte aligné à gauche */}
-            <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-sm mb-10">
+            {/* Sous-texte centré */}
+            <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-xs sm:max-w-sm mb-10">
               Réponds à quelques questions. Cela prendra moins de 2 minutes.
             </p>
 
-            {/* Bouton CTA aligné à gauche */}
-            <div className="w-full max-w-sm">
+            {/* Bouton CTA centré sans icône */}
+            <div className="w-full max-w-xs sm:max-w-sm">
               <button
                 onClick={() => onCommencer?.()}
-                className="w-full bg-[#1a3ea8] hover:bg-[#122d88] text-white border-none rounded-full px-6 py-4 flex items-center justify-center gap-3 cursor-pointer shadow-lg hover:shadow-xl transition-all font-bold text-base"
+                className="w-full bg-[#1a3ea8] hover:bg-[#122d88] text-white border-none rounded-full px-6 py-4 flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-all font-bold text-base"
               >
                 <span>Commencer</span>
-                <HiOutlineSearch className="text-xl" />
               </button>
             </div>
           </div>

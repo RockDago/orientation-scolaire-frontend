@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link, useParams } from "react-router-dom";
 import {
   FaBars,
   FaTimes,
@@ -24,6 +24,7 @@ const Sidebar = ({
   setIsMobileOpen,
 }) => {
   const navigate = useNavigate();
+  const { uuid } = useParams();
   const location = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -40,6 +41,7 @@ const Sidebar = ({
       "/dashboard/admin/parametres/serie",
       "/dashboard/admin/parametres/mention",
       "/dashboard/admin/parametres/parcours",
+      "/dashboard/admin/parametres/domaine",
       "/dashboard/admin/parametres/metier",
       "/dashboard/admin/parametres/etablissement",
     ];
@@ -74,27 +76,32 @@ const Sidebar = ({
   const settingsItems = [
     {
       label: "Séries",
-      path: "/dashboard/admin/parametres/serie",
+      path: `/dashboard/admin/${uuid}/parametres/serie`,
       icon: FaListAlt,
     },
     {
       label: "Mentions",
-      path: "/dashboard/admin/parametres/mention",
+      path: `/dashboard/admin/${uuid}/parametres/mention`,
       icon: FaTag,
     },
     {
       label: "Parcours",
-      path: "/dashboard/admin/parametres/parcours",
+      path: `/dashboard/admin/${uuid}/parametres/parcours`,
       icon: FaLayerGroup,
     },
     {
+      label: "Domaines",
+      path: `/dashboard/admin/${uuid}/parametres/domaine`,
+      icon: FaGlobe,
+    },
+    {
       label: "Métiers",
-      path: "/dashboard/admin/parametres/metier",
+      path: `/dashboard/admin/${uuid}/parametres/metier`,
       icon: FaBuilding,
     },
     {
       label: "Établissements",
-      path: "/dashboard/admin/parametres/etablissement",
+      path: `/dashboard/admin/${uuid}/parametres/etablissement`,
       icon: FaUniversity,
     },
   ];
@@ -196,16 +203,16 @@ const Sidebar = ({
         <nav className="flex-1 overflow-y-auto py-4">
           {/* Tableau de bord */}
           <div
-            onClick={() => goTo("/dashboard/admin")}
+            onClick={() => goTo(`/dashboard/admin/${uuid}`)}
             className={`${baseItemClass} ${
-              isLinkActive("/dashboard/admin") ? activeClass : inactiveClass
+              isLinkActive(`/dashboard/admin/${uuid}`) ? activeClass : inactiveClass
             }`}
             title={collapsed ? "Tableau de bord" : ""}
           >
             <div className="flex items-center gap-3">
               <FaTachometerAlt
                 className={`text-lg flex-shrink-0 ${
-                  isLinkActive("/dashboard/admin")
+                  isLinkActive(`/dashboard/admin/${uuid}`)
                     ? "text-blue-600"
                     : "text-gray-400 group-hover:text-gray-600"
                 }`}

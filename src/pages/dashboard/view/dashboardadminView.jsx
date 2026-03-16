@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FaGlobe,
   FaArrowUp,
@@ -25,51 +25,85 @@ const PIE_COLORS = [
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 
-// Fonction utilitaire pour extraire les stats de manière robuste
-const extractStats = (data) => {
-  if (!data) {
-    return {
-      totalViews: 0,
-      trendViews: 0,
-      topMetier: null
-    };
+// Fonction utilitaire pour calculer le total des vues à partir des différentes sources
+const calculateTotalViews = (data) => {
+  if (!data) return 0;
+
+  let total = 0;
+
+  // 1. Essayer d'abord les stats.total_views
+  if (data.stats?.total_views) {
+    total = data.stats.total_views;
+  }
+  // 2. Essayer les vues par page
+  else if (data.charts?.views_by_page) {
+    total = data.charts.views_by_page.reduce((sum, page) => sum + (page.total || 0), 0);
+  }
+  // 3. Essayer les données d'activité hebdomadaire
+  else if (data.charts?.weekly_activity) {
+    total = data.charts.weekly_activity.reduce((sum, day) => sum + (day.vues || day.views || 0), 0);
+  }
+  // 4. Essayer les données de visibilité mensuelle
+  else if (data.charts?.monthly_visibility) {
+    total = data.charts.monthly_visibility.reduce((sum, month) => sum + (month.visites || month.views || month.value || 0), 0);
   }
 
-  console.log("Données brutes reçues:", data);
-  console.log("Structure stats:", data.stats);
-  console.log("Structure totale:", JSON.stringify(data, null, 2));
+  return total;
+};
 
-  // Essayer différentes structures possibles
-  let totalViews = 0;
-  let trendViews = 0;
-  let topMetier = null;
-
-  // Cas 1: data.stats existe (structure actuelle)
-  if (data.stats) {
-    totalViews = data.stats.total_views ?? data.stats.totalViews ?? data.stats.views ?? 0;
-    trendViews = data.stats.trend_views ?? data.stats.trendViews ?? data.stats.trend ?? 0;
-    topMetier = data.stats.top_metier ?? data.stats.topMetier ?? null;
+// Fonction utilitaire pour calculer la tendance
+const calculateTrend = (data) => {
+  if (!data) return 0;
+  
+  // Essayer d'abord les stats.trend_views
+  if (data.stats?.trend_views) {
+    return data.stats.trend_views;
   }
-  // Cas 2: data.total_views directement dans la racine
-  else if (data.total_views !== undefined || data.totalViews !== undefined) {
-    totalViews = data.total_views ?? data.totalViews ?? 0;
-    trendViews = data.trend_views ?? data.trendViews ?? data.trend ?? 0;
-    topMetier = data.top_metier ?? data.topMetier ?? null;
+  
+  return 0;
+};
+
+// Fonction utilitaire pour extraire le top métier
+const extractTopMetier = (data) => {
+  if (!data) return null;
+
+  // 1. Essayer depuis stats.top_metier
+  if (data.stats?.top_metier) {
+    return data.stats.top_metier;
   }
-  // Cas 3: data.views directement
-  else if (data.views !== undefined) {
-    totalViews = data.views;
-    trendViews = data.trend ?? 0;
-    topMetier = data.top_metier ?? data.topMetier ?? null;
+  
+  // 2. Essayer depuis charts.top_metiers
+  if (data.charts?.top_metiers && data.charts.top_metiers.length > 0) {
+    return data.charts.top_metiers[0];
   }
 
-  console.log("Valeurs extraites:", { totalViews, trendViews, topMetier });
-
+  // 3. Retourner un objet par défaut
   return {
-    totalViews: Number(totalViews) || 0,
-    trendViews: Number(trendViews) || 0,
-    topMetier: topMetier
+    name: "—",
+    value: 0,
+    croissance: "0%"
   };
+};
+
+// Fonction pour préparer les données du graphique d'activité hebdomadaire
+const prepareWeeklyActivity = (data) => {
+  if (!data) return [];
+  
+  // Si nous avons déjà des données formatées
+  if (data.charts?.weekly_activity) {
+    return data.charts.weekly_activity;
+  }
+  
+  // Si nous avons des vues par page, on peut les formater
+  if (data.charts?.views_by_page) {
+    // Grouper par page ou créer des données factices pour l'affichage
+    return data.charts.views_by_page.map((item, index) => ({
+      day: item.page.split('/').pop() || `Page ${index + 1}`,
+      vues: item.total || 0
+    }));
+  }
+  
+  return [];
 };
 
 // ─── COMPOSANT DATE RANGE PICKER ─────────────────────────────────────────────
@@ -137,12 +171,8 @@ const DateRangePicker = ({ value, onChange }) => {
       },
     },
     {
-      l: "Année 2025",
-      f: () => ({ from: "2025-01-01", to: "2025-12-31", label: "Année 2025" }),
-    },
-    {
-      l: "Année 2026",
-      f: () => ({ from: "2026-01-01", to: "2026-12-31", label: "Année 2026" }),
+      l: "Depuis le début",
+      f: () => ({ from: "2000-01-01", to: null, label: "Depuis le début" }),
     },
   ];
 
@@ -864,10 +894,10 @@ function DonutChartSVG({ data }) {
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
 
 const DashboardAdminView = () => {
-  const [chart, setChart] = useState("line");
+  const [chart, setChart] = useState("bar"); // Mettre "bar" par défaut car il y a des données
   const [dateRange, setDateRange] = useState({
-    label: "Tous les résultats",
-    from: null,
+    label: "Depuis le début",
+    from: "2000-01-01",
     to: null,
   });
 
@@ -888,6 +918,7 @@ const DashboardAdminView = () => {
                      dateRange.label === "30 derniers jours" ? "30j" :
                      dateRange.label === "Cette année" ? "this_year" :
                      dateRange.label === "12 derniers mois" ? "12m" :
+                     dateRange.label === "Depuis le début" ? "all" :
                      dateRange.label === "Personnalisé" ? "custom" : "all";
       
       const data = await getDashboardData(
@@ -912,46 +943,35 @@ const DashboardAdminView = () => {
     fetchDash();
   }, [dateRange]);
 
-  // Extraire les stats de manière robuste
-  const stats = extractStats(dashData);
+  // Calculer les statistiques
+  const totalViews = calculateTotalViews(dashData);
+  const trendViews = calculateTrend(dashData);
+  const topMetier = extractTopMetier(dashData);
 
-  const visibiliteGrowthData = dashData?.charts?.monthly_visibility ?? 
-                               dashData?.monthly_visibility ?? 
-                               dashData?.visibility ?? 
-                               dashData?.charts?.monthly ?? [];
+  // Préparer les données des graphiques
+  const visibiliteGrowthData = dashData?.charts?.monthly_visibility ?? [];
+  const activityData = prepareWeeklyActivity(dashData);
+  const metiersRecherchesData = dashData?.charts?.top_metiers ?? [];
 
-  const activityData = dashData?.charts?.weekly_activity ?? 
-                       dashData?.weekly_activity ?? 
-                       dashData?.activity ?? 
-                       dashData?.charts?.weekly ?? [];
-
-  const metiersRecherchesData = dashData?.charts?.top_metiers ?? 
-                                 dashData?.top_metiers ?? 
-                                 dashData?.metiers ?? 
-                                 dashData?.charts?.top ?? [];
-
-  // Utiliser les stats extraites
-  const totalViews = stats.totalViews;
-  const trendViews = stats.trendViews;
-  const topMetierAPI = stats.topMetier;
+  console.log("Statistiques calculées:", { totalViews, trendViews, topMetier });
+  console.log("Données activité:", activityData);
 
   const statGlobal = {
     label: "Vues totales",
     value: totalViews,
     icon: FaGlobe,
     trend: trendViews,
-    trendLabel: "vs semaine dernière",
+    trendLabel: "vs période précédente",
     accentColor: "#10b981",
     suffix: "visites",
   };
 
-  const topMetier = topMetierAPI;
   const statMetier = {
-    label: topMetier ? `Top Métier : ${topMetier.name || topMetier.label || "Métier"}` : "Top Métier : —",
-    value: topMetier?.value ?? topMetier?.vues ?? topMetier?.count ?? 0,
+    label: topMetier?.name ? `Top Métier : ${topMetier.name}` : "Top Métier : —",
+    value: topMetier?.value ?? 0,
     icon: FaBriefcase,
     trend: (() => {
-      const trendStr = topMetier?.croissance ?? topMetier?.trend ?? "0%";
+      const trendStr = topMetier?.croissance ?? "0%";
       const num = parseInt(trendStr.toString().replace("+", "").replace("%", ""));
       return isNaN(num) ? 0 : num;
     })(),
