@@ -82,7 +82,7 @@ function MetierCard({ metier, onSelect }) {
   );
 }
 
-export default function Section2({ onSelectMetier, selectedMetier, onRetour, searchParam }) {
+export default function Section2({ onSelectMetier, selectedMetier, onRetour, searchParam, onHome }) {
   const navigate = useNavigate();
   const [allMetiers,  setAllMetiers]  = useState([]);
   const [allDomaines, setAllDomaines] = useState([]);
@@ -386,7 +386,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             {mode === "metier" && localSelected && (
               <button className="s2-btn-cont" onClick={handleValider}>Continuer →</button>
             )}
-            <button className="s2-btn-home" onClick={() => navigate("/acceuil/orientation")} aria-label="Accueil">
+            <button className="s2-btn-home" onClick={onHome} aria-label="Accueil">
               <HiOutlineHome size={26} />
             </button>
           </div>

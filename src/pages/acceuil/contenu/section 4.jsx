@@ -187,7 +187,7 @@ function FicheModal({ fiche, metier, onClose }) {
   );
 }
 
-export default function Section4({ metier, selectedRegion, reponseDomaine, onRetour }) {
+export default function Section4({ metier, selectedRegion, reponseDomaine, onRetour, onHome }) {
   const navigate = useNavigate();
   const [selectedEtab, setSelectedEtab] = useState(null);
   const [filterType,   setFilterType]   = useState("Tous");
@@ -474,7 +474,7 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
         {/* Icône Home fixée en bas */}
         <div className="shrink-0 flex justify-center pt-4 pb-2">
           <button
-            onClick={() => navigate("/acceuil/orientation")}
+            onClick={onHome}
             className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-md text-white border border-white/20"
             aria-label="Accueil"
           >

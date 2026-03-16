@@ -74,7 +74,7 @@ function normalizeRegionId(name) {
   );
 }
 
-export default function Section5({ metier, reponseDomaine, onRetour, onSelectRegion }) {
+export default function Section5({ metier, reponseDomaine, onRetour, onSelectRegion, onHome }) {
   const navigate = useNavigate();
   const [loading, setLoading]   = useState(true);
   const [activeRegions, setActiveRegions] = useState([]);
@@ -284,7 +284,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
         {/* Footer */}
         <div className="shrink-0 flex justify-center pt-4 pb-2">
           <button
-            onClick={() => navigate("/acceuil/orientation")}
+            onClick={onHome}
             className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all backdrop-blur-md text-white border border-white/20"
             aria-label="Accueil"
           >

@@ -35,7 +35,7 @@ function GradBg() {
   );
 }
 
-export default function Section6({ onCommencer, onRetour }) {
+export default function Section6({ onCommencer, onRetour, onHome }) {
   const navigate = useNavigate();
 
   return (
@@ -83,7 +83,7 @@ export default function Section6({ onCommencer, onRetour }) {
 
         {/* Zone fixe en bas pour l'icône home - centrée */}
         <div className="flex justify-center py-6">
-          <button onClick={() => navigate("/acceuil")} className="text-white hover:text-white/80 transition-colors" aria-label="Accueil">
+          <button onClick={onHome} className="text-white hover:text-white/80 transition-colors" aria-label="Accueil">
             <HiOutlineHome size={30} />
           </button>
         </div>

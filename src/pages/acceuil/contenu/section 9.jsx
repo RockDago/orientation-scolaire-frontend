@@ -45,7 +45,7 @@ function GradBg() {
   );
 }
 
-export default function Section9({ onVoirResultats, onRetour }) {
+export default function Section9({ onVoirResultats, onRetour, onHome }) {
   const navigate = useNavigate();
   const [choix, setChoix] = useState(null);
 
@@ -111,7 +111,7 @@ export default function Section9({ onVoirResultats, onRetour }) {
         {/* Home — pas de bouton "Voir les résultats" */}
         <div className="shrink-0 flex justify-center pt-4 pb-2">
           <button
-            onClick={() => navigate("/acceuil/orientation")}
+            onClick={onHome}
             className="text-white hover:text-white/80 transition-colors"
             aria-label="Accueil"
           >

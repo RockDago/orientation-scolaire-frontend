@@ -95,6 +95,8 @@ export default function Acceuil() {
     naviguerVers(`/acceuil/metier/${slug}`, direction);
   };
 
+  const onHome = () => naviguerVers("/acceuil/orientation", "back");
+
   return (
     <>
       <style>{`
@@ -155,6 +157,7 @@ export default function Acceuil() {
                       naviguerVersMetier(metier, "forward");
                     }}
                     onRetour={() => naviguerVers("/acceuil/orientation", "back")}
+                    onHome={onHome}
                   />
                 }
               />
@@ -173,6 +176,7 @@ export default function Acceuil() {
                       if (metier) setMetierSelectionne(metier);
                       naviguerVers("/acceuil/region-map-madagascar", "forward");
                     }}
+                    onHome={onHome}
                   />
                 }
               />
@@ -201,6 +205,7 @@ export default function Acceuil() {
                       setRegionSelectionnee(regionId);
                       naviguerVers("/acceuil/universiter-parcours", "forward");
                     }}
+                    onHome={onHome}
                   />
                 }
               />
@@ -214,6 +219,7 @@ export default function Acceuil() {
                     selectedRegion={regionSelectionnee}
                     reponseDomaine={reponseDomaine}
                     onRetour={() => naviguerVers("/acceuil/region-map-madagascar", "back")}
+                    onHome={onHome}
                   />
                 }
               />
@@ -225,6 +231,7 @@ export default function Acceuil() {
                   <Section6
                     onRetour={() => naviguerVers("/acceuil/orientation", "back")}
                     onCommencer={() => naviguerVers("/acceuil/recommendation", "forward")}
+                    onHome={onHome}
                   />
                 }
               />
@@ -239,6 +246,7 @@ export default function Acceuil() {
                       setReponseStatut(statut);
                       naviguerVers("/acceuil/trouver-domaine", "forward");
                     }}
+                    onHome={onHome}
                   />
                 }
               />
@@ -253,6 +261,7 @@ export default function Acceuil() {
                       setReponseDomaine(domaine);
                       naviguerVers("/acceuil/type-etude", "forward");
                     }}
+                    onHome={onHome}
                   />
                 }
               />
@@ -268,6 +277,7 @@ export default function Acceuil() {
                       setReponseEtudes(choixEtudes);
                       naviguerVers("/acceuil/metier-suggerer", "forward");
                     }}
+                    onHome={onHome}
                   />
                 }
               />
@@ -285,6 +295,7 @@ export default function Acceuil() {
                       setMetierOrientationSelectionne(metier);
                       naviguerVers("/acceuil/parcours-formation", "forward");
                     }}
+                    onHome={onHome}
                   />
                 }
               />
@@ -301,6 +312,7 @@ export default function Acceuil() {
                       setSourceFlux("orientation");
                       naviguerVers("/acceuil/region-map-madagascar", "forward");
                     }}
+                    onHome={onHome}
                   />
                 }
               />

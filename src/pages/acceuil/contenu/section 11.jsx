@@ -36,7 +36,7 @@ function GradBg() {
   );
 }
 
-export default function Section11({ metier, onRetour, onVoirFormations }) {
+export default function Section11({ metier, onRetour, onVoirFormations, onHome }) {
   const navigate = useNavigate();
   const [metierDetails, setMetierDetails] = useState(metier || null);
   const [loading,        setLoading]       = useState(false);
@@ -268,7 +268,7 @@ export default function Section11({ metier, onRetour, onVoirFormations }) {
 
           {/* Home */}
           <button
-            onClick={() => navigate("/acceuil/orientation")}
+            onClick={onHome}
             className="text-white hover:text-white/80 transition-colors"
             aria-label="Accueil"
           >

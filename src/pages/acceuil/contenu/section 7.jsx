@@ -43,7 +43,7 @@ function GradBg() {
   );
 }
 
-export default function Section7({ onSuivant, onRetour }) {
+export default function Section7({ onSuivant, onRetour, onHome }) {
   const navigate = useNavigate();
   const [statut, setStatut] = useState(null);
 
@@ -120,7 +120,7 @@ export default function Section7({ onSuivant, onRetour }) {
 
           {/* Home centré en bas (mais dans le conteneur aligné à gauche, on le centre avec flex justify-center) */}
           <div className="w-full flex justify-center py-2">
-            <button onClick={() => navigate("/acceuil/orientation")} className="text-white hover:text-white/80 transition-colors" aria-label="Accueil">
+            <button onClick={onHome} className="text-white hover:text-white/80 transition-colors" aria-label="Accueil">
               <HiOutlineHome size={30} />
             </button>
           </div>

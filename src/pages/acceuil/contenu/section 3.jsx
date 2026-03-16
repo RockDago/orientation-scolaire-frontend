@@ -105,7 +105,7 @@ function DecoSVG() {
   );
 }
 
-export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, onMetierLoaded }) {
+export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, onMetierLoaded, onHome }) {
   const navigate = useNavigate();
   const [selectedMetier, setSelectedMetier] = useState(metier);
   const [loading, setLoading] = useState(false);
@@ -228,7 +228,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
               <span className="text-sm">Établissements proposant ce parcours</span>
               <HiOutlineArrowRight size={18} />
             </button>
-            <button onClick={() => navigate("/acceuil/orientation")} className="text-white/70 hover:text-white transition-colors" aria-label="Accueil">
+            <button onClick={onHome} className="text-white/70 hover:text-white transition-colors" aria-label="Accueil">
               <HiOutlineHome size={26} />
             </button>
           </div>

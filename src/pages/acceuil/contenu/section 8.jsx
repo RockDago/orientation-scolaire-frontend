@@ -37,7 +37,7 @@ function GradBg() {
   );
 }
 
-export default function Section8({ onSuivant, onRetour }) {
+export default function Section8({ onSuivant, onRetour, onHome }) {
   const navigate    = useNavigate();
   const [allDomaines, setAllDomaines] = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -202,7 +202,7 @@ export default function Section8({ onSuivant, onRetour }) {
         {/* Home */}
         <div className="shrink-0 flex justify-center pt-3 pb-1">
           <button
-            onClick={() => navigate("/acceuil/orientation")}
+            onClick={onHome}
             className="text-white hover:text-white/80 transition-colors"
             aria-label="Accueil"
           >

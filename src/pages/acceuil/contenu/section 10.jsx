@@ -163,6 +163,7 @@ export default function Section10({
   reponseEtudes,
   onRetour,
   onVoirParcours,
+  onHome,
 }) {
   const navigate = useNavigate();
   const [index, setIndex] = useState(0);
@@ -482,7 +483,7 @@ export default function Section10({
 
             <div className="flex justify-center">
               <button
-                onClick={() => navigate("/acceuil/orientation")}
+                onClick={onHome}
                 className="text-white hover:text-white/80 transition-colors bg-white/10 p-2 rounded-full"
                 aria-label="Accueil"
               >
