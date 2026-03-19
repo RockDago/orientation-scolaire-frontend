@@ -226,7 +226,7 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
       {isLoading && (
         <div className="fixed inset-0 z-[500] bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832] flex items-center justify-center">
           <div className="s2-deco-tr">
-            <img src={pictoExplorer} alt="" className="w-[200px] lg:w-[260px] opacity-40 object-contain" />
+            <img src={pictoExplorer} alt="" className="w-[160px] lg:w-[260px] opacity-40 object-contain" />
           </div>
           <div className="relative z-10 flex flex-col items-center gap-8">
             <div className="loader">
@@ -245,11 +245,11 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
       {/* Déco SVG */}
       {/* Déco SVG */}
       <div className="s2-deco-tr">
-        <img 
-          src={pictoExplorer} 
-          alt="" 
-          className="w-[200px] lg:w-[260px] opacity-40 object-contain pointer-events-none"
-        />
+          <img 
+            src={pictoExplorer} 
+            alt="" 
+            className="w-[160px] lg:w-[260px] opacity-40 object-contain pointer-events-none"
+          />
       </div>
       <div className="s2-deco-bld">
         <BuildingSVG className="w-full opacity-60" />
@@ -264,7 +264,8 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
             <div className="flex items-center justify-between mb-2">
               {onRetour && (
                 <button onClick={onRetour} className="s2-back" aria-label="Retour">
-                  <IoArrowBackCircleOutline size={42} />
+                  <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+                  <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
                 </button>
               )}
             </div>
@@ -462,7 +463,8 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
           className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
           aria-label="Accueil"
         >
-          <HiOutlineHome size={30} />
+          <HiOutlineHome size={26} className="sm:hidden" />
+          <HiOutlineHome size={30} className="hidden sm:block" />
         </button>
       </div>
 
@@ -494,7 +496,10 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
         /* Zone scrollable — remplit l'espace restant */
         .s2-scroll {
           flex:1;min-height:0;overflow:visible;
-          padding: 1rem clamp(1.25rem,5vw,3.5rem) 2rem;
+          padding: 1rem 1rem 2rem; /* px-4 pt-4 approx */
+        }
+        @media(min-width: 640px) {
+          .s2-scroll { padding: 1.5rem 2.5rem 2rem; } /* px-10 pt-6 approx */
         }
 
         /* Retour */
@@ -508,13 +513,21 @@ export default function Section2({ onSelectMetier, selectedMetier, onRetour, sea
 
         /* Titre */
         .s2-h1 {
-          font-size:clamp(2.1rem,6.2vw,3.75rem);font-weight:900;
-          color:white;line-height:1;letter-spacing:-.03em;margin:0 0 .6rem;
+          font-size: 1.875rem; /* text-3xl */
+          font-weight: 900;
+          color: white; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 0.75rem;
         }
-        .s2-h1-sub { color:rgba(255,255,255,.65); }
+        @media(min-width: 640px) {
+          .s2-h1 { font-size: 3rem; } /* text-5xl approx */
+        }
+        .s2-h1-sub { color: rgba(255, 255, 255, 0.65); }
         .s2-desc {
-          font-size:clamp(.8rem,2vw,.95rem);color:rgba(255,255,255,.72);
-          line-height:1.6;max-width:30ch;margin:0 0 clamp(1rem,3vw,1.75rem);
+          font-size: 0.75rem; /* text-xs */
+          color: rgba(255, 255, 255, 0.72);
+          line-height: 1.6; max-width: 30ch; margin: 0 0 1.5rem;
+        }
+        @media(min-width: 640px) {
+          .s2-desc { font-size: 0.875rem; } /* text-sm */
         }
         @media(max-width: 1023px) {
           .s2-header-mob { display: flex; flex-direction: column; align-items: center; text-align: center; }

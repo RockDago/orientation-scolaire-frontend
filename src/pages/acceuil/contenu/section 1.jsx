@@ -4,21 +4,18 @@ import pictoOrientation from "../../../assets/BIG_picto_Orientation.png";
 import { useState } from "react";
 import BuildingSVG from "./BuildingSVG";
 
+
 export default function Section1({ onChoisirMetier, onOrientation }) {
-  const [transitioning, setTransitioning] = useState(null); 
+  const [transitioning, setTransitioning] = useState(null);
 
   const handleChoisirMetier = () => {
     setTransitioning("metier");
-    setTimeout(() => {
-      onChoisirMetier?.();
-    }, 750);
+    setTimeout(() => { onChoisirMetier?.(); }, 750);
   };
 
   const handleOrientation = () => {
     setTransitioning("orientation");
-    setTimeout(() => {
-      onOrientation?.();
-    }, 750);
+    setTimeout(() => { onOrientation?.(); }, 750);
   };
 
   return (
@@ -50,14 +47,12 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           />
           <div
             className="relative z-10"
-            style={{
-              animation: "logoReveal 0.75s cubic-bezier(0.16,1,0.3,1) 0.2s both",
-            }}
+            style={{ animation: "logoReveal 0.75s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}
           >
             <img
               src={logo}
               alt="MESUPRES"
-              className="h-20 w-auto object-contain drop-shadow-2xl"
+              className="h-16 w-auto object-contain drop-shadow-2xl"
               style={{ filter: "brightness(0) invert(1)" }}
             />
           </div>
@@ -66,10 +61,9 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
 
       <section
         className="s1-container relative w-full min-h-screen bg-white flex flex-col pt-6 md:pt-8"
-        style={{
-          animation: "sectionEntrance 0.6s cubic-bezier(0.16,1,0.3,1) both",
-        }}
+        style={{ animation: "sectionEntrance 0.6s cubic-bezier(0.16,1,0.3,1) both" }}
       >
+        {/* Noise texture */}
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.025]"
           style={{
@@ -80,34 +74,32 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
           }}
         />
 
+        {/* Radial glow */}
         <div
           className="absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-5"
-          style={{
-            background: "radial-gradient(circle at top right, #1565C0, transparent 70%)",
-          }}
+          style={{ background: "radial-gradient(circle at top right, #1565C0, transparent 70%)" }}
         />
 
-        {/* Background Building SVG Decoration */}
+        {/* Building BG */}
         <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]">
           <BuildingSVG />
         </div>
 
         <div className="relative flex-1 flex flex-col items-center justify-center">
+
+          {/* Logo + Badge */}
           <div
             className="flex flex-col items-center justify-center w-full py-4 md:py-6 gap-3"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both" }}
           >
-            <img
-              src={logo}
-              alt="MESUPRES Logo"
-              className="s1-logo w-auto object-contain drop-shadow-sm"
-            />
-            <span className="s1-badge inline-flex items-center gap-2 bg-white border border-blue-100 text-blue-700 font-semibold px-5 py-2 rounded-full shadow-sm">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse inline-block" />
+            <img src={logo} alt="MESUPRES Logo" className="s1-logo w-auto object-contain drop-shadow-sm" />
+            <span className="s1-badge inline-flex items-center gap-1.5 bg-white border border-blue-100 text-blue-700 font-semibold px-4 py-1.5 rounded-full shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse inline-block" />
               Orientation scolaire &amp; professionnelle
             </span>
           </div>
 
+          {/* Titre */}
           <div
             className="s1-header-text w-full max-w-6xl mx-auto text-center mt-6 mb-8"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}
@@ -117,16 +109,17 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
               <br />
               aujourd&apos;hui ?
             </h1>
-            <p className="s1-description text-slate-500 leading-relaxed max-w-3xl mx-auto mt-6">
+            <p className="s1-description text-slate-500 leading-relaxed max-w-3xl mx-auto mt-4">
               Découvre les métiers et les formations qui te correspondent
             </p>
           </div>
 
-          {/* C'est ici que l'on modifie max-w-7xl par lg:max-w-4xl xl:max-w-5xl pour réduire la taille sur desktop */}
+          {/* Cards */}
           <div
             className="s1-cards-container w-full lg:max-w-4xl xl:max-w-5xl mx-auto flex flex-col lg:flex-row flex-1 lg:flex-none pb-8 lg:pb-0 justify-center"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}
           >
+            {/* Card Explorer */}
             <button
               type="button"
               onClick={handleChoisirMetier}
@@ -139,16 +132,12 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
                 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300
                 group
               "
-              style={{
-                boxShadow: "0 8px 40px rgba(13,71,161,0.2)",
-              }}
+              style={{ boxShadow: "0 8px 40px rgba(13,71,161,0.2)" }}
             >
               <div className="s1-card-inner flex items-center justify-between w-full">
                 <div className="flex-1 z-10">
                   <h2 className="s1-card-title font-extrabold text-white leading-tight">
-                    Explorer
-                    <br />
-                    les métiers
+                    Explorer<br />les métiers
                   </h2>
                   <p className="s1-card-desc text-white/80 font-medium">
                     Je sais déjà ce qui m&apos;intéresse
@@ -163,6 +152,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
               </div>
             </button>
 
+            {/* Card Orientation */}
             <button
               type="button"
               onClick={handleOrientation}
@@ -175,16 +165,12 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
                 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-300
                 group
               "
-              style={{
-                boxShadow: "0 8px 40px rgba(117,184,42,0.2)",
-              }}
+              style={{ boxShadow: "0 8px 40px rgba(117,184,42,0.2)" }}
             >
               <div className="s1-card-inner flex items-center justify-between w-full">
                 <div className="flex-1 z-10">
                   <h2 className="s1-card-title font-extrabold text-white leading-tight">
-                    Trouver
-                    <br />
-                    mon orientation
+                    Trouver<br />mon orientation
                   </h2>
                   <p className="s1-card-desc text-white/80 font-medium">
                     Je ne sais pas encore
@@ -209,37 +195,68 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
         </p>
 
         <style>{`
-          /* Modern Vanilla CSS Responsiveness */
-          .s1-container {
-            padding-left: 1rem;
-            padding-right: 1rem;
-          }
-          .s1-logo { height: 8rem; }
-          .s1-badge { font-size: 0.85rem; }
-          .s1-title-main { font-size: 2.5rem; }
-          .s1-description { font-size: 1.1rem; }
-          .s1-cards-container { gap: 1.5rem; }
-          .s1-card { 
-            padding: 1.8rem; 
-            border-radius: 1.5rem; 
-          }
-          .s1-card-inner { gap: 1rem; }
-          .s1-card-title { font-size: 1.75rem; }
-          .s1-card-desc { font-size: 1rem; margin-top: 0.6rem; }
-          .s1-card-icon { width: 4.5rem; }
-          .s1-footer-text { font-size: 0.85rem; }
 
+          /* ─── BASE MOBILE (≥390px) ─── */
+          .s1-container { padding: 1rem 1rem 0; }
+          .s1-logo { height: 6.5rem; }
+          .s1-badge { font-size: 0.75rem; }
+          .s1-title-main { font-size: 1.875rem; }
+          .s1-description { font-size: 0.75rem; }
+          .s1-cards-container { gap: 1rem; padding-left: 1rem; padding-right: 1rem; }
+          .s1-card { padding: 1.5rem; border-radius: 1.25rem; }
+          .s1-card-inner { gap: 0.75rem; }
+          .s1-card-title { font-size: 1.5rem; }
+          .s1-card-desc { font-size: 0.875rem; margin-top: 0.4rem; }
+          .s1-card-icon { width: 4.5rem; }
+          .s1-footer { font-size: 0.75rem; }
+
+
+          /* ─── PETIT MOBILE 375×667 ─── */
+          @media (max-width: 389px) {
+            .s1-container { padding: 0.5rem 0.75rem 0; }
+
+            /* Logo & badge */
+            .s1-logo { height: 4.5rem; }
+            .s1-badge { font-size: 0.65rem; padding: 0.3rem 0.75rem; gap: 0.35rem; }
+
+            /* Titre & description */
+            .s1-header-text { margin-top: 0.5rem !important; margin-bottom: 0.75rem !important; }
+            .s1-title-main { font-size: 1.5rem; }
+            .s1-description { font-size: 0.7rem; margin-top: 0.35rem; }
+
+            /* Cards */
+            .s1-cards-container { gap: 0.6rem; padding-left: 0.75rem; padding-right: 0.75rem; }
+            .s1-card { padding: 1rem 1.1rem; border-radius: 1rem; }
+            .s1-card-inner { gap: 0.5rem; }
+            .s1-card-title { font-size: 1.15rem; }
+            .s1-card-desc { font-size: 0.72rem; margin-top: 0.25rem; }
+            .s1-card-icon { width: 3rem; }
+
+            /* Footer */
+            .s1-footer { margin-top: 0.6rem !important; font-size: 0.65rem; padding-bottom: 0.5rem; }
+
+            /* Réduire les py du wrapper logo/badge */
+            .s1-container > div > div:first-child { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+
+            /* Logo transition overlay */
+            .fixed.inset-0 img { height: 3.5rem; }
+          }
+
+
+          /* ─── SM (≥640px) ─── */
           @media (min-width: 640px) {
-            .s1-container { padding-left: 1.5rem; padding-right: 1.5rem; }
-            .s1-logo { height: 10rem; }
-            .s1-badge { font-size: 0.95rem; }
-            .s1-title-main { font-size: 3.5rem; }
-            .s1-description { font-size: 1.3rem; }
-            .s1-card { padding: 2.2rem; border-radius: 1.8rem; }
-            .s1-card-title { font-size: 2.2rem; }
+            .s1-container { padding: 1.5rem 2.5rem 0; }
+            .s1-logo { height: 8rem; }
+            .s1-badge { font-size: 0.875rem; }
+            .s1-title-main { font-size: 3rem; }
+            .s1-description { font-size: 0.875rem; }
+            .s1-card { padding: 2rem; border-radius: 1.5rem; }
+            .s1-card-title { font-size: 2rem; }
             .s1-card-icon { width: 5.5rem; }
           }
 
+
+          /* ─── MD (≥768px) ─── */
           @media (min-width: 768px) {
             .s1-container { padding-left: 2rem; padding-right: 2rem; }
             .s1-title-main { font-size: 4rem; }
@@ -247,11 +264,13 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-card { padding: 2.5rem; }
             .s1-card-title { font-size: 2.5rem; }
             .s1-card-icon { width: 6.5rem; }
-            .s1-footer-text { font-size: 1rem; }
+            .s1-footer { font-size: 1rem; }
           }
 
+
+          /* ─── LG (≥1024px) ─── */
           @media (min-width: 1024px) {
-            .s1-container { padding-left: 3rem; padding-right: 3rem; }
+            .s1-container { padding-left: 3rem; padding-right: 3rem; padding-top: 1rem !important; }
             .s1-logo { height: 4.5rem; }
             .s1-badge { font-size: 0.9rem; }
             .s1-title-main { font-size: 2.2rem; }
@@ -260,35 +279,27 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
             .s1-card { padding: 1.1rem; border-radius: 1.35rem; }
             .s1-card-title { font-size: 1.5rem; }
             .s1-card-icon { width: 3.2rem; }
-            .s1-footer-text { font-size: 1rem; }
             .s1-header-text { margin-top: 1rem !important; margin-bottom: 1.25rem !important; }
             .s1-footer { margin-top: 1rem !important; font-size: 0.85rem; }
-            .s1-container { padding-top: 1rem !important; }
           }
 
+
+          /* ─── XL (≥1280px) ─── */
           @media (min-width: 1280px) {
-            .s1-container { padding-left: 4rem; padding-right: 4rem; }
+            .s1-container { padding-left: 4rem; padding-right: 4rem; padding-top: 1.5rem !important; }
             .s1-logo { height: 6.5rem; }
             .s1-badge { font-size: 1rem; }
             .s1-title-main { font-size: 3.2rem; }
             .s1-description { font-size: 1.1rem; }
-            /* Correction ici : 'max-width: 5xl' était invalide en CSS pur. 
-               Remplacé par 1024px (équivalent de max-w-5xl dans Tailwind) */
             .s1-cards-container { gap: 1.5rem; max-width: 1024px !important; }
             .s1-card { padding: 1.4rem; border-radius: 1.6rem; }
             .s1-card-title { font-size: 1.8rem; }
             .s1-card-icon { width: 4rem; }
             .s1-footer { margin-top: 1.5rem !important; font-size: 1rem; }
-            .s1-container { padding-top: 1.5rem !important; }
           }
 
-          @media (max-width: 380px) {
-             .s1-title-main { font-size: 2.2rem; }
-             .s1-logo { height: 6.5rem; }
-             .s1-card { padding: 1.5rem; }
-             .s1-card-title { font-size: 1.5rem; }
-          }
 
+          /* ─── Animations ─── */
           @keyframes sectionEntrance {
             from { opacity: 0; }
             to   { opacity: 1; }

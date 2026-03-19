@@ -287,20 +287,21 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
 
       {/* Conteneur principal avec flex column et min-height */}
 
-      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4">
+      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4">
         {/* Bouton retour */}
         <button
           onClick={onRetour}
           className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center mb-4 p-0"
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={42} />
+          <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+          <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
         </button>
 
         {/* Contenu scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin-white pr-1">
           <div className="mb-6">
-            <h1 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-2">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2">
               UNIVERSITÉS<br className="sm:hidden" />&amp; INSTITUTS
             </h1>
             <div className="flex flex-wrap items-center gap-2">
@@ -454,7 +455,8 @@ export default function Section4({ metier, selectedRegion, reponseDomaine, onRet
             className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
             aria-label="Accueil"
           >
-            <HiOutlineHome size={26} />
+            <HiOutlineHome size={26} className="sm:hidden" />
+            <HiOutlineHome size={30} className="hidden sm:block" />
           </button>
         </div>
       </div>

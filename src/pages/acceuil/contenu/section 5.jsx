@@ -176,7 +176,7 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
       </div>
 
 
-      <div className="relative z-10 flex flex-col w-full px-5 sm:px-8 pt-5 pb-4">
+      <div className="relative z-10 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4">
         
         {/* Header */}
         <div className="flex items-center justify-between mb-0">
@@ -185,13 +185,14 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
             className="text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
             aria-label="Retour"
           >
-            <IoArrowBackCircleOutline size={42} />
+            <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+            <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
           </button>
         </div>
 
         {/* Titre giant */}
         <div className="mb-4 lg:mb-3">
-          <h1 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
             Choisir une<br />Région
           </h1>
           <p className="text-xs sm:text-sm text-white/60 font-bold tracking-widest uppercase">
@@ -278,7 +279,8 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
             className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
             aria-label="Accueil"
           >
-            <HiOutlineHome size={26} />
+            <HiOutlineHome size={26} className="sm:hidden" />
+            <HiOutlineHome size={30} className="hidden sm:block" />
           </button>
         </div>
       </div>

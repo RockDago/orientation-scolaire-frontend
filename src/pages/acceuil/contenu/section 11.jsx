@@ -11,7 +11,7 @@ function GradBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <div className="absolute top-0 right-0 pointer-events-none opacity-20 z-0 origin-top-right">
-        <img src={pictoOrientation} alt="" className="w-[200px] lg:w-[280px] object-contain" />
+        <img src={pictoOrientation} alt="" className="w-[160px] lg:w-[280px] object-contain" />
       </div>
       <div className="absolute top-[42%] left-0 right-0 opacity-15">
         <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="none">
@@ -120,14 +120,15 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
         <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4 overflow-hidden">
+      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
         {/* Retour */}
         <button
           onClick={onRetour}
           className="self-start shrink-0 text-white/80 hover:text-white transition-colors flex items-center justify-center p-0 mb-4"
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={42} />
+          <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+          <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
         </button>
 
         {/* Zone scrollable */}
@@ -141,7 +142,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
 
           <div className="mb-8">
             <p className="text-sm text-white/70 font-semibold mb-2 uppercase tracking-wider">Formation sélectionnée :</p>
-            <h1 className="text-4xl sm:text-5xl lg:text-3xl xl:text-4xl font-black text-white leading-tight tracking-tight break-words">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight break-words">
               {m?.label || "—"}
             </h1>
           </div>
@@ -238,7 +239,7 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
         <button
           onClick={handleVoirFormations}
-          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-4 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 pointer-events-auto"
+          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white font-black py-3 sm:py-4 px-6 rounded-full flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 pointer-events-auto"
         >
           <span className="text-sm">Établissements proposant ce parcours</span>
           <FiArrowRight size={18} />
@@ -252,7 +253,8 @@ export default function Section11({ metier, onRetour, onVoirFormations, onHome }
           className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
           aria-label="Accueil"
         >
-          <HiOutlineHome size={30} />
+          <HiOutlineHome size={26} className="sm:hidden" />
+          <HiOutlineHome size={30} className="hidden sm:block" />
         </button>
       </div>
 

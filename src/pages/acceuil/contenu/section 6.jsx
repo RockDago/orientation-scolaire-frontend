@@ -9,7 +9,7 @@ function GradBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <div className="absolute top-0 right-0 pointer-events-none opacity-20 z-0 origin-top-right">
-        <img src={pictoOrientation} alt="" className="w-[200px] lg:w-[280px] object-contain" />
+        <img src={pictoOrientation} alt="" className="w-[160px] lg:w-[280px] object-contain" />
       </div>
       <div className="absolute top-[42%] left-0 right-0 opacity-15">
         <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="none">
@@ -33,7 +33,7 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
         <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col w-full px-5 sm:px-8 pt-5 pb-20 lg:pb-4">
+      <div className="relative z-10 flex-1 flex flex-col w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-20 lg:pb-4">
 
         {/* Back button aligné à gauche */}
         <button 
@@ -41,7 +41,8 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
           className="self-start text-white/80 hover:text-white transition-colors flex items-center justify-center p-0 shrink-0" 
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={42} />
+          <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+          <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
         </button>
 
         {/* Zone de contenu - centrée verticalement et horizontalement */}
@@ -49,7 +50,7 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
           {/* Contenu centré */}
           <div className="flex flex-col items-center text-center w-full max-w-2xl">
             {/* Titre aligné à gauche - taille comme section 7 */}
-            <h1 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4">
               TROUVER<br />MON ORIENTATION
             </h1>
             
@@ -67,7 +68,7 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-sm px-6 pointer-events-none flex justify-center">
         <button
           onClick={() => onCommencer?.()}
-          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-8 py-3.5 flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-all font-black text-sm lg:text-base active:scale-95 pointer-events-auto"
+          className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white border-none rounded-full px-8 py-3 sm:py-4 flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-all font-black text-sm lg:text-base active:scale-95 pointer-events-auto"
         >
           <span>Commencer</span>
         </button>
@@ -76,7 +77,8 @@ export default function Section6({ onCommencer, onRetour, onHome }) {
       {/* Home Fixed - Centered */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
         <button onClick={onHome} className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm" aria-label="Accueil">
-          <HiOutlineHome size={30} />
+          <HiOutlineHome size={26} className="sm:hidden" />
+          <HiOutlineHome size={30} className="hidden sm:block" />
         </button>
       </div>
 

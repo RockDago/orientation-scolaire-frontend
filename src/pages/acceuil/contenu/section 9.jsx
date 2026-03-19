@@ -20,7 +20,7 @@ function GradBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <div className="absolute top-0 right-0 pointer-events-none opacity-20 z-0 origin-top-right">
-        <img src={pictoOrientation} alt="" className="w-[200px] lg:w-[280px] object-contain" />
+        <img src={pictoOrientation} alt="" className="w-[160px] lg:w-[280px] object-contain" />
       </div>
       <div className="absolute top-[42%] left-0 right-0 opacity-15">
         <svg width="100%" height="60" viewBox="0 0 1200 60" preserveAspectRatio="none" fill="none">
@@ -80,20 +80,21 @@ export default function Section9({ onVoirResultats, onRetour, onHome }) {
         <BuildingSVG />
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col h-full w-full px-5 sm:px-8 pt-5 pb-4 overflow-hidden">
+      <div className="relative z-10 flex-1 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-4 overflow-hidden">
         {/* Back button */}
         <button
           onClick={onRetour}
           className="self-start text-white/80 hover:text-white transition-colors flex items-center justify-center p-0 mb-4"
           aria-label="Retour"
         >
-          <IoArrowBackCircleOutline size={42} />
+          <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+          <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
         </button>
 
         {/* Zone de contenu - centrée verticalement et horizontalement */}
         <div className="flex-1 flex flex-col justify-center items-center py-4">
           <div className="flex flex-col items-center text-center w-full max-w-2xl">
-            <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight mb-4">
               Tu te vois
               <br />
               plutôt…
@@ -127,7 +128,7 @@ export default function Section9({ onVoirResultats, onRetour, onHome }) {
         <button
           onClick={handleSuivant}
           disabled={!choix || isLoading}
-          className={`w-full py-3.5 rounded-full font-black text-sm lg:text-base transition-all shadow-lg active:scale-95 pointer-events-auto ${
+          className={`w-full py-3 sm:py-4 rounded-full font-black text-sm lg:text-base transition-all shadow-lg active:scale-95 pointer-events-auto ${
             choix && !isLoading
               ? "bg-[#1250c8] text-white hover:bg-[#1a3ea8] hover:-translate-y-0.5"
               : "bg-white/20 text-white/40 cursor-not-allowed"
@@ -144,7 +145,8 @@ export default function Section9({ onVoirResultats, onRetour, onHome }) {
           className="text-white hover:text-white/80 transition-colors pointer-events-auto shadow-lg bg-black/10 rounded-full p-2 backdrop-blur-sm"
           aria-label="Accueil"
         >
-          <HiOutlineHome size={30} />
+          <HiOutlineHome size={26} className="sm:hidden" />
+          <HiOutlineHome size={30} className="hidden sm:block" />
         </button>
       </div>
 

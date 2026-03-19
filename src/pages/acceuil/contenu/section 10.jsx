@@ -10,7 +10,7 @@ function GradBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <div className="absolute top-0 right-0 pointer-events-none opacity-20 z-0 origin-top-right">
-        <img src={pictoOrientation} alt="" className="w-[200px] lg:w-[280px] object-contain" />
+        <img src={pictoOrientation} alt="" className="w-[160px] lg:w-[280px] object-contain" />
       </div>
       <div className="absolute bottom-0 left-0 right-0 opacity-10">
         <svg
@@ -270,7 +270,7 @@ export default function Section10({
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-8 pt-4 pb-3">
+      <div className="relative z-10 flex flex-col h-full w-full px-4 sm:px-10 pt-4 sm:pt-6 pb-3">
         {/* Header simple */}
         <div className="flex items-center justify-between shrink-0 mb-0">
           <button
@@ -278,13 +278,14 @@ export default function Section10({
             className="text-white/80 hover:text-white transition-colors flex items-center justify-center p-0"
             aria-label="Retour"
           >
-            <IoArrowBackCircleOutline size={42} />
+            <IoArrowBackCircleOutline size={32} className="sm:hidden" />
+            <IoArrowBackCircleOutline size={42} className="hidden sm:block" />
           </button>
         </div>
 
         {/* Titre giant */}
         <div className="mb-6 lg:mb-4">
-          <h1 className="text-4xl sm:text-5xl lg:text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 uppercase">
             Métiers<br />Suggérés
           </h1>
           {!loading && (
@@ -376,7 +377,7 @@ export default function Section10({
               <div className="shrink-0 pt-4">
                 <button
                   onClick={handleVoirParcours}
-                  className="w-full py-4 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-3 hover:shadow-2xl active:scale-95 shadow-lg"
+                  className="w-full py-3 sm:py-4 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-3 hover:shadow-2xl active:scale-95 shadow-lg"
                   style={{ background: "white", color: "#1250c8" }}
                 >
                   Découvrir le parcours
@@ -442,7 +443,8 @@ export default function Section10({
           className="text-white hover:text-white/80 transition-colors bg-black/10 p-2 rounded-full backdrop-blur-sm pointer-events-auto shadow-lg"
           aria-label="Accueil"
         >
-          <HiOutlineHome size={30} />
+          <HiOutlineHome size={26} className="sm:hidden" />
+          <HiOutlineHome size={30} className="hidden sm:block" />
         </button>
       </div>
 
