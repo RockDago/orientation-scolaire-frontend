@@ -19,6 +19,7 @@ import {
   useDeleteDomaineMutation,
   useUpdateDomaineMutation,
 } from "../../../hooks/mutations/useApiMutations";
+import { getApiErrorMessage } from "../../../api/errors";
 import { useDomainesQuery } from "../../../hooks/queries/useApiQueries";
 import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
@@ -445,7 +446,7 @@ export default function DomainesView() {
       }
       setShowModal(false);
     } catch (error) { 
-      const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
+      const message = getApiErrorMessage(error, "Erreur lors de l'enregistrement");
       showToast(message, "error"); 
     }
   };

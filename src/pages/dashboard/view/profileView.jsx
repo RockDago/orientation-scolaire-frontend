@@ -29,6 +29,7 @@ import {
   useChangePasswordMutation,
   useUpdateProfileMutation,
 } from "../../../hooks/mutations/useApiMutations";
+import { getApiErrorMessage, getApiErrorStatus } from "../../../api/errors";
 import { useProfileQuery } from "../../../hooks/queries/useApiQueries";
 
 // Badges
@@ -159,7 +160,7 @@ const ProfileView = () => {
 
   useEffect(() => {
     if (!isError) return;
-    if (profileError.response?.status === 401) {
+    if (getApiErrorStatus(profileError) === 401) {
       showToast("Session expirÃ©e, veuillez vous reconnecter", "error");
       navigate("/login");
       return;
@@ -390,8 +391,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
       showToast("Informations mises à jour avec succès", "success");
       setEditInfo(false);
     } catch (error) {
-      const message =
-        error.response?.data?.message || "Erreur lors de la mise à jour";
+      const message = getApiErrorMessage(error, "Erreur lors de la mise à jour");
       showToast(message, "error");
     }
   };
@@ -404,8 +404,7 @@ const PersonalInfoForm = ({ userData, showToast }) => {
       showToast("Contacts mis à jour avec succès", "success");
       setEditContact(false);
     } catch (error) {
-      const message =
-        error.response?.data?.message || "Erreur lors de la mise à jour";
+      const message = getApiErrorMessage(error, "Erreur lors de la mise à jour");
       showToast(message, "error");
     }
   };
@@ -748,9 +747,10 @@ const SecurityForm = ({ showToast }) => {
         passwordConfirm: "",
       });
     } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        "Erreur lors du changement de mot de passe";
+      const message = getApiErrorMessage(
+        error,
+        "Erreur lors du changement de mot de passe",
+      );
       showToast(message, "error");
     }
   };

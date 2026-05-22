@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../App";
+import { getApiErrorMessage, getApiErrorStatus } from "../../api/errors";
 import { useLoginMutation } from "../../hooks/mutations/useApiMutations";
 import backgroundImage from "../../assets/mesupres.png";
 import mesupresLogo from "../../assets/logo.png";
@@ -72,10 +73,12 @@ const Login = () => {
       }, 2000);
     } catch (error) {
       const message =
-        error.response?.data?.message ||
+        getApiErrorMessage(error) ||
         "Erreur de connexion. Veuillez réessayer.";
 
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      const status = getApiErrorStatus(error);
+
+      if (status === 401 || status === 403) {
         setErrors({ general: message });
         toast.error(message, {
           position: "top-right",
@@ -86,7 +89,7 @@ const Login = () => {
           draggable: true,
           theme: "colored",
         });
-      } else if (error.response?.status === 422) {
+      } else if (status === 422) {
         setErrors({ general: "Veuillez remplir tous les champs correctement." });
         toast.warning("Champs manquants ou invalides.", {
           position: "top-right",

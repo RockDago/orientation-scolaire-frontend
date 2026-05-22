@@ -20,201 +20,197 @@ import {
 } from "../../services/user.services";
 import { queryKeys } from "../queries/queryKeys";
 
+const getResource = (payload, resourceKey) =>
+  payload?.[resourceKey] ?? payload?.data ?? payload ?? null;
+
 const invalidate = (queryClient, queryKey) =>
   queryClient.invalidateQueries({ queryKey });
 
+const useCreateResourceMutation = ({ mutationFn, listKey }) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: () => invalidate(queryClient, listKey),
+  });
+};
+
+const useDeleteResourceMutation = ({ mutationFn, listKey }) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: () => invalidate(queryClient, listKey),
+  });
+};
+
+const useUpdateResourceMutation = ({
+  mutationFn,
+  listKey,
+  detailKey,
+  resourceKey,
+}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: (payload, variables) => {
+      const resource = getResource(payload, resourceKey);
+      if (resource && variables?.id) {
+        queryClient.setQueryData(detailKey(variables.id), resource);
+      }
+      invalidate(queryClient, listKey);
+    },
+  });
+};
+
 export const useLoginMutation = () =>
   useMutation({
-    mutationFn: ({ identifier, password, rememberMe }) =>
-      login(identifier, password, rememberMe),
+    mutationFn: ({ identifier, password }) => login(identifier, password),
   });
 
-export const useCreateDomaineMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useCreateDomaineMutation = () =>
+  useCreateResourceMutation({
     mutationFn: createDomaine,
-    onSuccess: () => invalidate(queryClient, queryKeys.domaines.all),
+    listKey: queryKeys.domaines.lists(),
   });
-};
 
-export const useUpdateDomaineMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useUpdateDomaineMutation = () =>
+  useUpdateResourceMutation({
     mutationFn: ({ id, data }) => updateDomaine(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.domaines.detail(variables.id), data);
-      invalidate(queryClient, queryKeys.domaines.all);
-    },
+    listKey: queryKeys.domaines.lists(),
+    detailKey: queryKeys.domaines.detail,
+    resourceKey: "domaine",
   });
-};
 
-export const useDeleteDomaineMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useDeleteDomaineMutation = () =>
+  useDeleteResourceMutation({
     mutationFn: deleteDomaine,
-    onSuccess: () => invalidate(queryClient, queryKeys.domaines.all),
+    listKey: queryKeys.domaines.lists(),
   });
-};
 
-export const useCreateMentionMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useCreateMentionMutation = () =>
+  useCreateResourceMutation({
     mutationFn: createMention,
-    onSuccess: () => invalidate(queryClient, queryKeys.mentions.all),
+    listKey: queryKeys.mentions.lists(),
   });
-};
 
-export const useUpdateMentionMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useUpdateMentionMutation = () =>
+  useUpdateResourceMutation({
     mutationFn: ({ id, data }) => updateMention(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.mentions.detail(variables.id), data);
-      invalidate(queryClient, queryKeys.mentions.all);
-    },
+    listKey: queryKeys.mentions.lists(),
+    detailKey: queryKeys.mentions.detail,
+    resourceKey: "mention",
   });
-};
 
-export const useDeleteMentionMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useDeleteMentionMutation = () =>
+  useDeleteResourceMutation({
     mutationFn: deleteMention,
-    onSuccess: () => invalidate(queryClient, queryKeys.mentions.all),
+    listKey: queryKeys.mentions.lists(),
   });
-};
 
-export const useCreateParcoursMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useCreateParcoursMutation = () =>
+  useCreateResourceMutation({
     mutationFn: createParcours,
-    onSuccess: () => invalidate(queryClient, queryKeys.parcours.all),
+    listKey: queryKeys.parcours.lists(),
   });
-};
 
-export const useUpdateParcoursMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useUpdateParcoursMutation = () =>
+  useUpdateResourceMutation({
     mutationFn: ({ id, data }) => updateParcours(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.parcours.detail(variables.id), data);
-      invalidate(queryClient, queryKeys.parcours.all);
-    },
+    listKey: queryKeys.parcours.lists(),
+    detailKey: queryKeys.parcours.detail,
+    resourceKey: "parcours",
   });
-};
 
-export const useDeleteParcoursMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useDeleteParcoursMutation = () =>
+  useDeleteResourceMutation({
     mutationFn: deleteParcours,
-    onSuccess: () => invalidate(queryClient, queryKeys.parcours.all),
+    listKey: queryKeys.parcours.lists(),
   });
-};
 
-export const useCreateSerieMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useCreateSerieMutation = () =>
+  useCreateResourceMutation({
     mutationFn: createSerie,
-    onSuccess: () => invalidate(queryClient, queryKeys.series.all),
+    listKey: queryKeys.series.lists(),
   });
-};
 
-export const useUpdateSerieMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useUpdateSerieMutation = () =>
+  useUpdateResourceMutation({
     mutationFn: ({ id, data }) => updateSerie(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.series.detail(variables.id), data);
-      invalidate(queryClient, queryKeys.series.all);
-    },
+    listKey: queryKeys.series.lists(),
+    detailKey: queryKeys.series.detail,
+    resourceKey: "serie",
   });
-};
 
-export const useDeleteSerieMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useDeleteSerieMutation = () =>
+  useDeleteResourceMutation({
     mutationFn: deleteSerie,
-    onSuccess: () => invalidate(queryClient, queryKeys.series.all),
+    listKey: queryKeys.series.lists(),
   });
-};
 
-export const useCreateMetierMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useCreateMetierMutation = () =>
+  useCreateResourceMutation({
     mutationFn: createMetier,
-    onSuccess: () => invalidate(queryClient, queryKeys.metiers.all),
+    listKey: queryKeys.metiers.lists(),
   });
-};
 
-export const useUpdateMetierMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useUpdateMetierMutation = () =>
+  useUpdateResourceMutation({
     mutationFn: ({ id, data }) => updateMetier(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.metiers.detail(variables.id), data);
-      invalidate(queryClient, queryKeys.metiers.all);
-    },
+    listKey: queryKeys.metiers.lists(),
+    detailKey: queryKeys.metiers.detail,
+    resourceKey: "metier",
   });
-};
 
-export const useDeleteMetierMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useDeleteMetierMutation = () =>
+  useDeleteResourceMutation({
     mutationFn: deleteMetier,
-    onSuccess: () => invalidate(queryClient, queryKeys.metiers.all),
+    listKey: queryKeys.metiers.lists(),
   });
-};
 
-export const useCreateEtablissementMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useCreateEtablissementMutation = () =>
+  useCreateResourceMutation({
     mutationFn: createEtablissement,
-    onSuccess: () => invalidate(queryClient, queryKeys.etablissements.all),
+    listKey: queryKeys.etablissements.lists(),
   });
-};
 
-export const useUpdateEtablissementMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useUpdateEtablissementMutation = () =>
+  useUpdateResourceMutation({
     mutationFn: ({ id, data }) => updateEtablissement(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.etablissements.detail(variables.id), data);
-      invalidate(queryClient, queryKeys.etablissements.all);
-    },
+    listKey: queryKeys.etablissements.lists(),
+    detailKey: queryKeys.etablissements.detail,
+    resourceKey: "etablissement",
   });
-};
 
-export const useDeleteEtablissementMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useDeleteEtablissementMutation = () =>
+  useDeleteResourceMutation({
     mutationFn: deleteEtablissement,
-    onSuccess: () => invalidate(queryClient, queryKeys.etablissements.all),
+    listKey: queryKeys.etablissements.lists(),
   });
-};
 
-export const useCreateUserMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useCreateUserMutation = () =>
+  useCreateResourceMutation({
     mutationFn: createUser,
-    onSuccess: () => invalidate(queryClient, queryKeys.users.all),
+    listKey: queryKeys.users.lists(),
   });
-};
 
-export const useUpdateUserMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useUpdateUserMutation = () =>
+  useUpdateResourceMutation({
     mutationFn: ({ id, data }) => updateUser(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.users.detail(variables.id), data);
-      invalidate(queryClient, queryKeys.users.all);
-    },
+    listKey: queryKeys.users.lists(),
+    detailKey: queryKeys.users.detail,
+    resourceKey: "utilisateur",
   });
-};
 
 export const useToggleUserStatusMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, isActive }) => toggleUserStatus(id, isActive),
-    onSuccess: () => invalidate(queryClient, queryKeys.users.all),
+    onSuccess: (payload, variables) => {
+      const user = getResource(payload, "utilisateur");
+      if (user && variables?.id) {
+        queryClient.setQueryData(queryKeys.users.detail(variables.id), user);
+      }
+      invalidate(queryClient, queryKeys.users.lists());
+    },
   });
 };
 
@@ -223,20 +219,19 @@ export const useResetUserPasswordMutation = () =>
     mutationFn: ({ id, password }) => resetUserPassword(id, password),
   });
 
-export const useDeleteUserMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useDeleteUserMutation = () =>
+  useDeleteResourceMutation({
     mutationFn: deleteUser,
-    onSuccess: () => invalidate(queryClient, queryKeys.users.all),
+    listKey: queryKeys.users.lists(),
   });
-};
 
 export const useUpdateProfileMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateProfile,
-    onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.profile.detail(), data);
+    onSuccess: (payload) => {
+      const user = getResource(payload, "utilisateur");
+      queryClient.setQueryData(queryKeys.profile.detail(), user);
       invalidate(queryClient, queryKeys.profile.all);
     },
   });

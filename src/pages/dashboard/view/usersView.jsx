@@ -21,6 +21,7 @@ import {
   useToggleUserStatusMutation,
   useUpdateUserMutation,
 } from "../../../hooks/mutations/useApiMutations";
+import { getApiErrorMessage } from "../../../api/errors";
 import { useUsersQuery } from "../../../hooks/queries/useApiQueries";
 import { FaEye, FaEyeSlash, FaCheck, FaTimes as FaTimesCircle } from "react-icons/fa";
 
@@ -726,7 +727,7 @@ export default function UsersView() {
       }
       setShowModal(false);
     } catch (error) { 
-      showToast(error.response?.data?.message || "Erreur", "error"); 
+      showToast(getApiErrorMessage(error, "Erreur"), "error"); 
     }
   };
 
@@ -735,7 +736,7 @@ export default function UsersView() {
     try {
       await toggleUserStatusMutation.mutateAsync({ id: user.id, isActive: newStatus });
       showToast(`Utilisateur ${newStatus ? 'activé' : 'désactivé'}`);
-    } catch { showToast("Erreur statut", "error"); }
+    } catch (error) { showToast(getApiErrorMessage(error, "Erreur statut"), "error"); }
   };
 
   const handleResetPassword = async (newPass) => {
@@ -755,7 +756,7 @@ export default function UsersView() {
       showToast("Utilisateur supprimé avec succès");
       setDeleteItem(null);
     } catch (error) { 
-        const message = error.response?.data?.message || "Erreur lors de la suppression";
+        const message = getApiErrorMessage(error, "Erreur lors de la suppression");
         showToast(message, "error"); 
     }
   };

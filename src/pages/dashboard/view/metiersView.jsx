@@ -23,6 +23,7 @@ import {
   useDeleteMetierMutation,
   useUpdateMetierMutation,
 } from "../../../hooks/mutations/useApiMutations";
+import { getApiErrorMessage } from "../../../api/errors";
 import {
   useDomainesQuery,
   useMentionsQuery,
@@ -1102,7 +1103,7 @@ const handleSave = async () => {
     setFormData(emptyForm);
 
   } catch (error) {
-    const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
+    const message = getApiErrorMessage(error, "Erreur lors de l'enregistrement");
     showToast(message, "error");
   }
 };
@@ -1119,7 +1120,7 @@ const handleSave = async () => {
       showToast("Métier supprimé avec succès", "success");
       setDeleteItem(null);
     } catch (error) {
-      const message = error.response?.data?.message || "Erreur lors de la suppression";
+      const message = getApiErrorMessage(error, "Erreur lors de la suppression");
       showToast(message, "error");
     }
   };

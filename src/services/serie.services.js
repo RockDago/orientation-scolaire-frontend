@@ -1,14 +1,13 @@
 import API from "../api/axios";
 
-export const getAllSeries = async (search = "") => {
-  const params = search ? { search } : {};
+export const getAllSeries = async (params = {}) => {
   const response = await API.get("/series", { params });
-  return response.data.series;
+  return response.data;
 };
 
 export const getSerieById = async (id) => {
   const response = await API.get(`/series/${id}`);
-  return response.data.serie;
+  return response.data;
 };
 
 export const createSerie = async (data) => {
@@ -17,7 +16,7 @@ export const createSerie = async (data) => {
     label: data.label,
     description: data.description,
   });
-  return response.data.serie;
+  return response.data;
 };
 
 export const updateSerie = async (id, data) => {
@@ -26,7 +25,7 @@ export const updateSerie = async (id, data) => {
     label: data.label,
     description: data.description,
   });
-  return response.data.serie;
+  return response.data;
 };
 
 export const deleteSerie = async (id) => {

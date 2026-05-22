@@ -1,14 +1,13 @@
 import API from "../api/axios";
 
-export const getAllMentions = async (search = "") => {
-  const params = search ? { search } : {};
+export const getAllMentions = async (params = {}) => {
   const response = await API.get("/mentions", { params });
-  return response.data.mentions;
+  return response.data;
 };
 
 export const getMentionById = async (id) => {
   const response = await API.get(`/mentions/${id}`);
-  return response.data.mention;
+  return response.data;
 };
 
 export const createMention = async (data) => {
@@ -17,7 +16,7 @@ export const createMention = async (data) => {
     description: data.description,
     domaine_id: data.domaine_id,
   });
-  return response.data.mention;
+  return response.data;
 };
 
 export const updateMention = async (id, data) => {
@@ -26,7 +25,7 @@ export const updateMention = async (id, data) => {
     description: data.description,
     domaine_id: data.domaine_id,
   });
-  return response.data.mention;
+  return response.data;
 };
 
 export const deleteMention = async (id) => {

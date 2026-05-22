@@ -1,20 +1,20 @@
 import API from "../api/axios";
 
-export const getAllParcours = async (search = "") => {
-  const params = search ? { search } : {};
+export const getAllParcours = async (params = {}) => {
   const response = await API.get("/parcours", { params });
-  return response.data.parcours;
+  return response.data;
 };
 
 export const getParcoursById = async (id) => {
   const response = await API.get(`/parcours/${id}`);
-  return response.data.parcours;
+  return response.data;
 };
 
 export const createParcours = async (data) => {
   const response = await API.post("/parcours", {
     label: data.label,
     mention: data.mention,
+    mentionId: data.mentionId,
     duree: data.duree,
     niveau: data.niveau,
     conditions: data.conditions,
@@ -22,13 +22,14 @@ export const createParcours = async (data) => {
     objectifs: data.objectifs,
     debouches: data.debouches,
   });
-  return response.data.parcours;
+  return response.data;
 };
 
 export const updateParcours = async (id, data) => {
   const response = await API.put(`/parcours/${id}`, {
     label: data.label,
     mention: data.mention,
+    mentionId: data.mentionId,
     duree: data.duree,
     niveau: data.niveau,
     conditions: data.conditions,
@@ -36,7 +37,7 @@ export const updateParcours = async (id, data) => {
     objectifs: data.objectifs,
     debouches: data.debouches,
   });
-  return response.data.parcours;
+  return response.data;
 };
 
 export const deleteParcours = async (id) => {

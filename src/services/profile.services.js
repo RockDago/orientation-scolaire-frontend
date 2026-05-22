@@ -1,41 +1,37 @@
 import API from "../api/axios";
 
-/**
- * Récupérer le profil de l'utilisateur connecté
- */
-export const getProfile = async () => {
-  const response = await API.get("/profile");
-  return response.data.utilisateur;
+const persistUser = (utilisateur) => {
+  if (!utilisateur) return;
+
+  if (localStorage.getItem("token")) {
+    localStorage.setItem("user", JSON.stringify(utilisateur));
+  }
+
+  if (sessionStorage.getItem("token")) {
+    sessionStorage.setItem("user", JSON.stringify(utilisateur));
+  }
 };
 
-/**
- * Mettre à jour les infos personnelles du profil
- * @param {object} profileData - nom, prenom, nom_utilisateur, email, telephone, adresse, code_postal
- */
+export const getProfile = async () => {
+  const response = await API.get("/profile");
+  return response.data;
+};
+
 export const updateProfile = async (profileData) => {
   const response = await API.put("/profile", {
     nom: profileData.nom,
     prenom: profileData.prenom,
-    nom_utilisateur: profileData.username,
+    nom_utilisateur: profileData.username || profileData.nom_utilisateur,
     email: profileData.email,
     telephone: profileData.telephone,
     adresse: profileData.adresse,
     code_postal: profileData.code_postal,
   });
 
-  const utilisateur = response.data.utilisateur;
-
-  localStorage.setItem("user", JSON.stringify(utilisateur));
-  sessionStorage.setItem("user", JSON.stringify(utilisateur));
-
-  return utilisateur;
+  persistUser(response.data.utilisateur);
+  return response.data;
 };
 
-/**
- * Changer le mot de passe
- * @param {string} motDePasseActuel
- * @param {string} nouveauMotDePasse
- */
 export const changePassword = async (motDePasseActuel, nouveauMotDePasse) => {
   const response = await API.post("/profile/change-password", {
     mot_de_passe_actuel: motDePasseActuel,
@@ -44,13 +40,12 @@ export const changePassword = async (motDePasseActuel, nouveauMotDePasse) => {
   return response.data;
 };
 
-/**
- * Récupérer l'utilisateur depuis le localStorage
- */
 export const getLocalUser = () => {
   const userData =
     localStorage.getItem("user") || sessionStorage.getItem("user");
+
   if (!userData) return null;
+
   try {
     return JSON.parse(userData);
   } catch {

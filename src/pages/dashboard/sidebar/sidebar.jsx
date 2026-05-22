@@ -14,7 +14,9 @@ import {
   FaListAlt,
   FaUsers,
 } from "react-icons/fa";
-import logo from "../../../assets/logo.jpeg";
+
+import logoLight from "../../../assets/logo dark.png";
+import logoDark from "../../../assets/logo.png";
 
 const Sidebar = ({
   collapsed,
@@ -40,15 +42,19 @@ const Sidebar = ({
       "/dashboard/admin/parametres/metier",
       "/dashboard/admin/parametres/etablissement",
     ];
+
     return settingsPaths.some((path) => location.pathname === path);
   };
 
-
-
   const baseItemClass =
     "group flex items-center justify-between px-4 py-3 mx-3 mb-1 rounded-xl transition-all duration-200 cursor-pointer text-sm font-medium";
-  const activeClass = "bg-blue-50 dark:bg-neutral-800/50 text-blue-600 dark:text-blue-400";
-  const inactiveClass = "text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-white";
+
+  const activeClass =
+    "bg-blue-50 dark:bg-neutral-800/50 text-blue-600 dark:text-blue-400";
+
+  const inactiveClass =
+    "text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-white";
+
   const subItemClass =
     "flex items-center px-4 py-2 my-1 mx-3 rounded-lg text-sm text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer pl-11";
 
@@ -85,13 +91,10 @@ const Sidebar = ({
     },
   ];
 
-  const effectiveIsOpen =
-    settingsOpen || (isSettingsChildActive() && !collapsed);
+  const effectiveIsOpen = settingsOpen || (isSettingsChildActive() && !collapsed);
 
   return (
     <>
-
-
       {/* Overlay mobile pour la Sidebar */}
       {isMobileOpen && (
         <div
@@ -117,11 +120,20 @@ const Sidebar = ({
             <Link
               to="/"
               className="absolute left-1/2 transform -translate-x-1/2"
+              aria-label="Accueil"
             >
+              {/* Mode clair */}
               <img
-                src={logo}
+                src={logoLight}
                 alt="Logo Orientation"
-                className="h-16 w-auto object-contain"
+                className="h-16 w-auto object-contain dark:hidden"
+              />
+
+              {/* Mode sombre */}
+              <img
+                src={logoDark}
+                alt="Logo Orientation"
+                className="hidden h-16 w-auto object-contain dark:block"
               />
             </Link>
           )}
@@ -133,6 +145,7 @@ const Sidebar = ({
               !collapsed ? "absolute right-4" : "mx-auto"
             }`}
             title={collapsed ? "Ouvrir la sidebar" : "Fermer la sidebar"}
+            type="button"
           >
             <FaBars />
           </button>
@@ -140,6 +153,8 @@ const Sidebar = ({
           <button
             onClick={() => setIsMobileOpen(false)}
             className="lg:hidden p-2 text-gray-400 dark:text-neutral-400 hover:text-red-500 absolute right-4"
+            type="button"
+            aria-label="Fermer la sidebar"
           >
             <FaTimes />
           </button>
@@ -151,7 +166,9 @@ const Sidebar = ({
           <div
             onClick={() => goTo("/dashboard/admin")}
             className={`${baseItemClass} ${
-              location.pathname === "/dashboard/admin" ? activeClass : inactiveClass
+              location.pathname === "/dashboard/admin"
+                ? activeClass
+                : inactiveClass
             }`}
             title={collapsed ? "Tableau de bord" : ""}
           >
@@ -159,8 +176,8 @@ const Sidebar = ({
               <FaTachometerAlt
                 className={`text-lg flex-shrink-0 ${
                   location.pathname === "/dashboard/admin"
-                    ? "text-blue-600"
-                    : "text-gray-400 group-hover:text-gray-600"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-400 dark:text-neutral-500 group-hover:text-gray-600 dark:group-hover:text-neutral-300"
                 }`}
               />
               {!collapsed && <span>Tableau de bord</span>}
@@ -174,19 +191,22 @@ const Sidebar = ({
                 if (collapsed) setCollapsed(false);
                 setSettingsOpen(!settingsOpen);
               }}
-              className={`${baseItemClass} ${isSettingsChildActive() ? activeClass : inactiveClass}`}
+              className={`${baseItemClass} ${
+                isSettingsChildActive() ? activeClass : inactiveClass
+              }`}
               title={collapsed ? "Paramètres" : ""}
             >
               <div className="flex items-center gap-3">
                 <FaCog
                   className={`text-lg flex-shrink-0 ${
                     isSettingsChildActive()
-                      ? "text-blue-600"
-                      : "text-gray-400 group-hover:text-gray-600"
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-gray-400 dark:text-neutral-500 group-hover:text-gray-600 dark:group-hover:text-neutral-300"
                   }`}
                 />
                 {!collapsed && <span>Paramètres</span>}
               </div>
+
               {!collapsed && (
                 <FaChevronRight
                   className={`text-xs text-gray-400 transition-transform duration-200 ${
@@ -204,29 +224,35 @@ const Sidebar = ({
                   : "max-h-0 opacity-0"
               }`}
             >
-              {settingsItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => goTo(item.path)}
-                  className={`${subItemClass} ${
-                    location.pathname === item.path
-                      ? "text-blue-600 font-semibold bg-blue-50"
-                      : ""
-                  }`}
-                >
+              {settingsItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+
+                return (
                   <div
-                    className={`w-1.5 h-1.5 rounded-full mr-3 ${
-                      location.pathname === item.path
-                        ? "bg-blue-600"
-                        : "bg-gray-300"
+                    key={item.path}
+                    onClick={() => goTo(item.path)}
+                    className={`${subItemClass} ${
+                      isActive
+                        ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-neutral-800/50"
+                        : ""
                     }`}
-                  />
-                  <span className="flex items-center gap-2">
-                    <item.icon className="text-sm" />
-                    {item.label}
-                  </span>
-                </div>
-              ))}
+                  >
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full mr-3 ${
+                        isActive
+                          ? "bg-blue-600 dark:bg-blue-400"
+                          : "bg-gray-300 dark:bg-neutral-600"
+                      }`}
+                    />
+
+                    <span className="flex items-center gap-2">
+                      <Icon className="text-sm" />
+                      {item.label}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -234,7 +260,9 @@ const Sidebar = ({
           <div
             onClick={() => goTo("/dashboard/admin/utilisateurs")}
             className={`${baseItemClass} ${
-              location.pathname === "/dashboard/admin/utilisateurs" ? activeClass : inactiveClass
+              location.pathname === "/dashboard/admin/utilisateurs"
+                ? activeClass
+                : inactiveClass
             }`}
             title={collapsed ? "Utilisateurs" : ""}
           >
@@ -242,24 +270,27 @@ const Sidebar = ({
               <FaUsers
                 className={`text-lg flex-shrink-0 ${
                   location.pathname === "/dashboard/admin/utilisateurs"
-                    ? "text-blue-600"
-                    : "text-gray-400 group-hover:text-gray-600"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-400 dark:text-neutral-500 group-hover:text-gray-600 dark:group-hover:text-neutral-300"
                 }`}
               />
               {!collapsed && <span>Utilisateurs</span>}
             </div>
           </div>
         </nav>
-        
+
         {/* Footer Copyright */}
-        <div className={`px-6 py-6 border-t border-gray-50 dark:border-neutral-800 transition-opacity duration-300 ${collapsed ? 'opacity-0 h-0 p-0 overflow-hidden' : 'opacity-100'}`}>
+        <div
+          className={`px-6 py-6 border-t border-gray-50 dark:border-neutral-800 transition-opacity duration-300 ${
+            collapsed ? "opacity-0 h-0 p-0 overflow-hidden" : "opacity-100"
+          }`}
+        >
           <p className="text-[10px] text-gray-400 dark:text-neutral-500 font-medium leading-relaxed text-center">
             © 2026 MESUPRES
+            <br />
             Tous droits réservés
           </p>
         </div>
-
-
       </aside>
     </>
   );

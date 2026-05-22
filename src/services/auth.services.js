@@ -1,32 +1,28 @@
 import API from "../api/axios";
 
-/**
- * Connexion avec email ou nom_utilisateur + mot_de_passe
- * @param {string} identifiant 
- * @param {string} motDePasse
- * @param {boolean} rememberMe 
- */
 export const login = async (identifiant, motDePasse) => {
   const response = await API.post("/login", {
     nom_utilisateur: identifiant,
     mot_de_passe: motDePasse,
   });
-
-  const { token, utilisateur } = response.data;
-  return { token, utilisateur };
+  return response.data;
 };
 
 export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  localStorage.removeItem("userRole");
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("user");
+  sessionStorage.removeItem("userRole");
 };
 
 export const getCurrentUser = () => {
   const userData =
     localStorage.getItem("user") || sessionStorage.getItem("user");
+
   if (!userData) return null;
+
   try {
     return JSON.parse(userData);
   } catch {
@@ -37,24 +33,15 @@ export const getCurrentUser = () => {
 export const isAuthenticated = () => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
-  return !!token;
+  return Boolean(token);
 };
 
 export const getProfile = async () => {
   const response = await API.get("/profile");
-  return response.data.utilisateur;
+  return response.data;
 };
 
-/**
- * Mettre à jour le profil
- * @param {object} profileData - les champs à mettre à jour (ex: { prenom, nom, email, telephone })
- */
 export const updateProfile = async (profileData) => {
   const response = await API.put("/profile", profileData);
-  const utilisateur = response.data.utilisateur;
-
-  localStorage.setItem("user", JSON.stringify(utilisateur));
-  sessionStorage.setItem("user", JSON.stringify(utilisateur));
-
-  return utilisateur;
+  return response.data;
 };

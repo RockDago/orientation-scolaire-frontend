@@ -19,6 +19,7 @@ import {
   useDeleteEtablissementMutation,
   useUpdateEtablissementMutation,
 } from "../../../hooks/mutations/useApiMutations";
+import { getApiErrorMessage } from "../../../api/errors";
 import {
   useDomainesQuery,
   useEtablissementsQuery,
@@ -1305,7 +1306,7 @@ export default function EtablissementsView() {
       setShowModal(false);
       setFormData(emptyForm);
     } catch (error) {
-      const message = error.response?.data?.message || "Erreur lors de l'enregistrement";
+      const message = getApiErrorMessage(error, "Erreur lors de l'enregistrement");
       showToast(message, "error");
     }
   };
@@ -1321,7 +1322,7 @@ export default function EtablissementsView() {
       showToast("Établissement supprimé avec succès", "success");
       setDeleteItem(null);
     } catch (error) {
-      const message = error.response?.data?.message || "Erreur lors de la suppression";
+      const message = getApiErrorMessage(error, "Erreur lors de la suppression");
       showToast(message, "error");
     }
   };

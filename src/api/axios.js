@@ -1,5 +1,5 @@
-// src/api/axios.js
 import axios from "axios";
+import { getApiErrorMessage, getApiValidationErrors } from "./errors";
 
 export const API_URL =
   import.meta.env.VITE_API_URL ||
@@ -8,7 +8,7 @@ export const API_URL =
     : "https://dssip.bambaray.mg/backend/public");
 
 const API = axios.create({
-  baseURL: API_URL + "/api",
+  baseURL: `${API_URL}/api`,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
@@ -16,8 +16,6 @@ const API = axios.create({
   },
 });
 
-// ─── Routes publiques : jamais de redirection /login sur ces endpoints ────────
-// Tous les appels depuis /acceuil/* utilisent ces routes sans token.
 const PUBLIC_ROUTES = [
   "/track-view",
   "/track-search",
@@ -34,64 +32,65 @@ const PUBLIC_ROUTES = [
 const isPublicRoute = (url = "") =>
   PUBLIC_ROUTES.some((route) => url.includes(route));
 
-// ─── Intercepteur requête : ajouter le token JWT si disponible ────────────────
+const clearAuthStorage = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("userRole");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("user");
+  sessionStorage.removeItem("userRole");
+};
+
+const normalizeAxiosError = (error) => {
+  error.status = error.response?.status ?? null;
+  error.validationErrors = getApiValidationErrors(error);
+  error.apiMessage = getApiErrorMessage(error);
+  return error;
+};
+
 API.interceptors.request.use(
   (config) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
+
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-// ─── Intercepteur réponse : gérer les erreurs 401 ─────────────────────────────
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      const requestUrl  = error.config?.url || "";
+    const normalizedError = normalizeAxiosError(error);
+
+    if (normalizedError.status === 401) {
+      const requestUrl = error.config?.url || "";
       const currentPath = window.location.pathname;
 
-      console.error("❌ [Axios] 401 détecté:", {
-        url:     requestUrl,
-        method:  error.config?.method?.toUpperCase(),
-        message: error.response?.data?.message,
-        fullUrl: error.config?.baseURL + requestUrl,
+      console.error("[Axios] 401 detecte:", {
+        url: requestUrl,
+        method: error.config?.method?.toUpperCase(),
+        message: normalizedError.apiMessage,
+        fullUrl: `${error.config?.baseURL || ""}${requestUrl}`,
       });
 
-      // 1. Déjà sur /login → ne pas boucler
       if (currentPath === "/login") {
-        return Promise.reject(error);
+        return Promise.reject(normalizedError);
       }
 
-      // 2. Route publique (appels depuis /acceuil) → ignorer le 401 silencieusement
-      //    Le visiteur continue sa navigation normalement.
-      if (isPublicRoute(requestUrl)) {
-        console.warn("⚠️ [Axios] 401 sur route publique — ignoré, pas de redirection:", requestUrl);
-        return Promise.reject(error);
+      if (isPublicRoute(requestUrl) || currentPath.startsWith("/acceuil")) {
+        return Promise.reject(normalizedError);
       }
 
-      // 3. L'utilisateur est sur une page publique /acceuil → ne pas rediriger
-      if (currentPath.startsWith("/acceuil")) {
-        console.warn("⚠️ [Axios] 401 depuis /acceuil — ignoré:", requestUrl);
-        return Promise.reject(error);
-      }
-
-      // 4. Route protégée + pas authentifié → nettoyer et rediriger
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("userRole");
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
-      sessionStorage.removeItem("userRole");
-
+      clearAuthStorage();
       window.location.href = "/login";
     }
 
-    return Promise.reject(error);
+    return Promise.reject(normalizedError);
   },
 );
 
