@@ -9,11 +9,12 @@ const shouldRetry = (failureCount, error) => {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
+      staleTime: 60 * 1000,
       gcTime: 30 * 60 * 1000,
       retry: shouldRetry,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
       refetchOnReconnect: true,
+      refetchInterval: 60 * 1000,
     },
     mutations: {
       retry: false,

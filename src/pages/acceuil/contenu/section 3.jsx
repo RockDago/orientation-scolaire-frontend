@@ -16,9 +16,10 @@ function MetierDetailPanel({ metier }) {
     <div className="relative h-full rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 p-4 sm:p-6 xl:p-8 flex flex-col overflow-hidden">
       {/* Titre & badges */}
       <div className="shrink-0 mb-3 sm:mb-5">
-
+        <h2 className="text-white font-black text-lg sm:text-2xl leading-tight uppercase mb-2">
+          {metier.label}
+        </h2>
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-
           {metier.niveau && (
             <span className="text-white text-[10px] sm:text-xs font-bold bg-[#155faa]/60 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
               Niveau : {Array.isArray(metier.niveau) ? metier.niveau.join(", ") : metier.niveau}

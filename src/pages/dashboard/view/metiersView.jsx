@@ -1342,7 +1342,7 @@ const handleSave = async () => {
                       <div className="flex flex-col items-center gap-2 opacity-50">
                         <FaSearch size={24}/>
                         <span className="text-sm">
-                          {searchTerm ? "Aucun r??sultat trouv??" : "Aucun m??tier disponible"}
+                          {searchTerm ? "Aucun résultat trouvé" : "Aucun métier disponible"}
                         </span>
                       </div>
                     </td>

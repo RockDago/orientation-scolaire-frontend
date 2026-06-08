@@ -235,9 +235,11 @@ export default function Section5({ metier, reponseDomaine, onRetour, onSelectReg
   const metierLabel = metier?.label || (reponseDomaine ? `Formation en ${reponseDomaine}` : "ce parcours");
 
   // On ne garde que les régions qui ont des résultats
-  const sortedRegionIds = [...activeRegions].sort((a, b) => 
-    REGION_LABELS[a].localeCompare(REGION_LABELS[b])
-  );
+  const sortedRegionIds = [...activeRegions].sort((a, b) => {
+    const labelA = REGION_LABELS[a] || a;
+    const labelB = REGION_LABELS[b] || b;
+    return labelA.localeCompare(labelB);
+  });
 
   return (
     <div className="relative w-full min-h-[100dvh] overflow-hidden font-['Sora'] flex flex-col bg-gradient-to-br from-[#1250c8] via-[#1a6dcc] via-[#28b090] via-[#a0d820] to-[#c2e832]">

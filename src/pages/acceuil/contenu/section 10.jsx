@@ -147,7 +147,7 @@ function MetierDetailPanel({ metier, onVoirParcours }) {
         {metier.parcours?.length > 0 && (
           <div>
             <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-2">
-              Parcours d'etudes possibles
+              Parcours d'études possibles
             </p>
             <div className="flex flex-wrap gap-2">
               {metier.parcours.map((item, index) => (
@@ -165,7 +165,7 @@ function MetierDetailPanel({ metier, onVoirParcours }) {
         {metier.serie?.length > 0 && (
           <div>
             <p className="text-white/55 text-[10px] uppercase tracking-widest font-bold mb-2">
-              Series recommandees
+              Séries recommandées
             </p>
             <div className="flex flex-wrap gap-2">
               {metier.serie.map((item, index) => (
@@ -215,8 +215,8 @@ export default function Section10({
   const total = metiersFiltres.length;
   const metier = metiersFiltres[index] ?? null;
 
-  const handlePrev = () => setIndex((i) => (i - 1 + total) % total);
-  const handleNext = () => setIndex((i) => (i + 1) % total);
+  const handlePrev = () => { if (total <= 1) return; setIndex((i) => (i - 1 + total) % total); };
+  const handleNext = () => { if (total <= 1) return; setIndex((i) => (i + 1) % total); };
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -280,17 +280,17 @@ export default function Section10({
 
           <div className="shrink-0 mb-6">
             <h1 className="text-[clamp(1.85rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight uppercase">
-              Metiers suggeres
+              Métiers suggérés
             </h1>
             <p className="text-white/80 text-[clamp(0.72rem,0.95vw,0.95rem)] font-semibold mt-2 uppercase tracking-widest">
-              {total} resultat{total > 1 ? "s" : ""} trouve{total > 1 ? "s" : ""}
+              {total} résultat{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
             </p>
           </div>
 
           <div className="flex-1 overflow-y-auto scrollbar-thin-white space-y-3 pr-2 pb-20 min-h-0">
             {total === 0 ? (
               <div className="bg-white/10 rounded-2xl p-6 border border-white/20 text-center">
-                <p className="text-white/85 text-sm">Aucun metier trouve.</p>
+                <p className="text-white/85 text-sm">Aucun métier trouvé.</p>
               </div>
             ) : (
               metiersFiltres.map((item, i) => {
@@ -301,6 +301,7 @@ export default function Section10({
                     type="button"
                     key={item.id || i}
                     onClick={() => setIndex(i)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIndex(i); }}}
                     className={`w-full rounded-2xl p-4 border text-left transition-all ${
                       active
                         ? "bg-white/20 border-white/50"
@@ -348,10 +349,10 @@ export default function Section10({
 
             <div className="mb-6">
               <h1 className="text-[clamp(1.85rem,4.8vw,3.7rem)] font-black text-white leading-tight tracking-tight uppercase">
-                Metiers suggeres
+                Métiers suggérés
               </h1>
               <p className="text-xs sm:text-sm text-white/60 font-black tracking-widest uppercase mt-1">
-                {total} resultat{total > 1 ? "s" : ""} trouve{total > 1 ? "s" : ""}
+                {total} résultat{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
               </p>
             </div>
           </div>
@@ -363,7 +364,7 @@ export default function Section10({
           >
             {total === 0 ? (
               <div className="rounded-3xl p-8 flex flex-col items-center justify-center bg-white/10 border border-white/20 backdrop-blur-md">
-                <p className="text-white/85 text-center text-base">Aucun resultat.</p>
+                <p className="text-white/85 text-center text-base">Aucun résultat.</p>
               </div>
             ) : (
               metier && (
@@ -415,13 +416,14 @@ export default function Section10({
         </div>
       </div>
 
-      <div className="hidden lg:block fixed bottom-4 left-1/2 -translate-x-1/2 z-[100]">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
         <button
           onClick={onHome}
-          className="text-white hover:text-white/80 transition-colors bg-black/10 p-2 rounded-full backdrop-blur-sm shadow-lg"
+          className="text-white hover:text-white/80 transition-colors bg-black/10 p-2 rounded-full backdrop-blur-sm shadow-lg pointer-events-auto"
           aria-label="Accueil"
         >
-          <HiOutlineHome size={30} />
+          <HiOutlineHome size={26} className="sm:hidden" />
+          <HiOutlineHome size={30} className="hidden sm:block" />
         </button>
       </div>
 

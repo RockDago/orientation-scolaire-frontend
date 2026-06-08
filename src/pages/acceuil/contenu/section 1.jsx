@@ -116,7 +116,7 @@ export default function Section1({ onChoisirMetier, onOrientation }) {
 
           {/* Cards */}
           <div
-            className="s1-cards-container w-full lg:max-w-3xl xl:max-w-4xl mx-auto flex flex-col lg:flex-row lg:flex-1 lg:flex-none pb-8 lg:pb-0 justify-center"
+            className="s1-cards-container w-full lg:max-w-3xl xl:max-w-4xl mx-auto flex flex-col lg:flex-row pb-8 lg:pb-0 justify-center"
             style={{ animation: "fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}
           >
             {/* Card Explorer */}

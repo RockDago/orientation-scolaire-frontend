@@ -123,6 +123,8 @@ export default function DashboardAdminView() {
     error: dashboardError,
   } = useDashboardQuery(customFilter);
   const loading = isLoading || (isFetching && !dashData);
+  const chartsInitializedRef = useRef(false);
+  const lastDataRef = useRef(null);
 
   /*
   const fetchDash = async () => {
@@ -150,9 +152,18 @@ export default function DashboardAdminView() {
 
   useEffect(() => {
     if (dashData && !loading) {
-      initializeCharts();
+      // Only reinitialize if data actually changed (not just a refetch with same data)
+      const dataChanged = lastDataRef.current !== dashData;
+      if (dataChanged || !chartsInitializedRef.current) {
+        lastDataRef.current = dashData;
+        chartsInitializedRef.current = true;
+        initializeCharts();
+      }
     }
-    return () => destroyCharts();
+    return () => {
+      chartsInitializedRef.current = false;
+      destroyCharts();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashData, loading]);
 

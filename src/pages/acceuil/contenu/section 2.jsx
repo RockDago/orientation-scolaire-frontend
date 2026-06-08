@@ -886,7 +886,6 @@ export default function Section2({
           position: relative;
           width: 100%;
           min-height: 100dvh;
-          height: 100dvh;
           display: flex;
           flex-direction: column;
           background: linear-gradient(135deg, #1250c8 0%, #1a6dcc 25%, #28b090 55%, #a0d820 80%, #c2e832 100%);
@@ -919,13 +918,12 @@ export default function Section2({
           display: flex;
           flex: 1;
           width: 100%;
-          min-height: 100dvh;
-          height: 100dvh;
+          min-height: 0;
         }
 
         .s2-layout.metier-focus {
           justify-content: center;
-          height: 100vh;
+          min-height: 100dvh;
           overflow: visible;
         }
 

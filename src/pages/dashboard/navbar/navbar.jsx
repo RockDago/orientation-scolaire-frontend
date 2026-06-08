@@ -22,9 +22,19 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
     if (saved !== null) return saved === "true";
     return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
   });
+  const [isLgScreen, setIsLgScreen] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : false
+  );
 
   const profileRef = useRef(null);
   const closeProfileTimerRef = useRef(null);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const handler = (e) => setIsLgScreen(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   const userData = user || {
     prenom: "",
@@ -105,12 +115,11 @@ const Navbar = ({ collapsed, user, onMobileMenuClick }) => {
       <header
         className="fixed top-0 right-0 h-16 md:h-20 bg-white dark:bg-neutral-900 shadow-sm flex items-center justify-between px-4 md:px-8 border-b border-gray-200 dark:border-neutral-800 transition-all duration-300 text-gray-900 dark:text-neutral-100 z-30"
         style={{
-          left:
-            typeof window !== "undefined" && window.innerWidth >= 1024
-              ? collapsed
-                ? "5rem"
-                : "18rem"
-              : "0",
+          left: isLgScreen
+            ? collapsed
+              ? "5rem"
+              : "18rem"
+            : "0",
         }}
       >
         <div className="absolute inset-0 pointer-events-none lg:hidden" />
