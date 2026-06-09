@@ -95,7 +95,7 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
   const _navigate = useNavigate();
   const [manualSelectedMetier, setManualSelectedMetier] = useState(null);
   const hasDetailedMetier = metier?.parcoursFormation?.length > 0;
-  const shouldResolveSlug = Boolean(slugFromUrl && !metier?.id && !hasDetailedMetier);
+  const shouldResolveSlug = Boolean(slugFromUrl && !hasDetailedMetier && (!metier?.id || metier?.id === 0));
   const { data: allMetiers = [], isLoading: loadingMetiers } = useMetiersQuery("", {
     enabled: shouldResolveSlug,
   });
@@ -105,9 +105,11 @@ export default function Section3({ metier, onRetour, onVoirCarte, slugFromUrl, o
   );
   const metierId = hasDetailedMetier
     ? null
-    : typeof metier?.id === "number"
-    ? metier.id
-    : slugMetier?.id;
+    : metier?.id != null && typeof metier?.id !== "boolean"
+    ? Number(metier.id)
+    : slugMetier?.id != null
+    ? Number(slugMetier.id)
+    : null;
   const { data: fetchedMetier, isLoading: loadingDetails } = useMetierQuery(metierId, {
     enabled: Boolean(metierId),
   });

@@ -167,6 +167,7 @@ export default function Section2({
 
   const metierComboRef = useRef(null);
   const comboRef = useRef(null);
+  const searchTimerRef = useRef(null);
 
   useEffect(() => {
     const t = setTimeout(() => setEntered(true), 50);
@@ -286,14 +287,27 @@ export default function Section2({
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleLancerRecherche = (metierToUse = null) => {
     const targetMetier = metierToUse || localSelected;
 
     if (!targetMetier) return;
 
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+
     setIsLoading(true);
 
-    setTimeout(() => {
+    searchTimerRef.current = setTimeout(() => {
+      searchTimerRef.current = null;
       onSelectMetier?.(targetMetier);
       setIsLoading(false);
       setLocalSelected(null);
