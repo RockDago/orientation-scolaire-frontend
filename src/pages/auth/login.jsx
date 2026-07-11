@@ -5,8 +5,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../App";
 import { getApiErrorMessage, getApiErrorStatus } from "../../api/errors";
 import { useLoginMutation } from "../../hooks/mutations/useApiMutations";
-import backgroundImage from "../../assets/mesupres.png";
 import mesupresLogo from "../../assets/logo.png";
+import BuildingSVG from "../acceuil/contenu/BuildingSVG";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,22 +17,15 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showToast, setShowToast] = useState(false);
   const loginMutation = useLoginMutation();
   const loading = loginMutation.isPending;
 
-  const handleForgotPassword = () => {
-    toast.info(
-      "Veuillez contacter l'administrateur pour réinitialiser votre mot de passe",
-      {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-      }
-    );
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
+  const triggerForgotPasswordToast = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 5000);
   };
 
   const handleSubmit = async (e) => {
@@ -122,226 +115,313 @@ const Login = () => {
         theme="colored"
       />
 
+      {/* Toast Mot de passe oublié */}
       <div
-        className="relative min-h-screen overflow-hidden bg-slate-950"
+        className={`fixed top-5 right-5 z-50 transition-all duration-500 transform ${
+          showToast ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+        }`}
+      >
+        <div className="bg-white/10 backdrop-blur-xl border border-white/25 rounded-xl shadow-2xl p-4 w-80 flex items-start">
+          <div className="flex-shrink-0">
+            <svg
+              className="h-6 w-6 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div className="ml-3 w-0 flex-1 pt-0.5">
+            <p className="text-sm font-bold text-white leading-5">
+              Mot de passe oublié ?
+            </p>
+            <p className="mt-1 text-sm leading-5 text-white/70">
+              Contactez l'administrateur pour réinitialiser votre mot de passe.
+            </p>
+          </div>
+          <div className="ml-4 flex-shrink-0 flex">
+            <button
+              onClick={() => setShowToast(false)}
+              className="inline-flex text-white/50 hover:text-white/80 focus:outline-none transition ease-in-out duration-150"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L10 10 5.707 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="login-container relative w-full min-h-[100dvh] font-['Sora'] flex items-center justify-center p-4 overflow-hidden"
         style={{
-          backgroundImage: `url(${backgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          background:
+            "linear-gradient(135deg, #1250c8 0%, #1a6dcc 25%, #28b090 55%, #a0d820 80%, #c2e832 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-slate-950/65" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/55 to-slate-950/80" />
+        {/* Noise texture */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.025]"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")",
+            backgroundRepeat: "repeat",
+            backgroundSize: "120px",
+          }}
+        />
 
-        <div className="relative z-10 flex min-h-screen items-center px-4 py-5 sm:px-6 sm:py-8 lg:px-12 lg:py-8">
-          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 lg:grid-cols-2 lg:items-center lg:gap-8">
-            <div className="hidden flex-col justify-between text-white lg:flex">
-              <div className="max-w-xl animate-fade-in-up">
-                <div className="mb-1 flex items-center justify-center gap-3 lg:mb-8 lg:justify-start lg:gap-4">
-                  <img
-                    src={mesupresLogo}
-                    alt="Logo MESUPRES"
-                    className="h-14 w-auto object-contain sm:h-16 lg:h-20"
+        {/* Radial glow */}
+        <div
+          className="absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-5"
+          style={{
+            background:
+              "radial-gradient(circle at top right, #1565C0, transparent 70%)",
+          }}
+        />
+
+        {/* Building SVG — fixé en bas */}
+        <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.8]">
+          <BuildingSVG />
+        </div>
+
+        {/* Carte glassmorphism */}
+        <div className="login-card relative z-10 bg-white/10 backdrop-blur-2xl border border-white/25 rounded-3xl p-6 sm:p-8 w-full max-w-sm shadow-2xl">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-40 h-40 rounded-full flex items-center justify-center overflow-hidden mb-4">
+              <img
+                src={mesupresLogo}
+                alt="Logo MESUPRES"
+                className="w-full h-full object-contain drop-shadow-sm"
+              />
+            </div>
+            <h2 className="text-2xl font-extrabold text-white tracking-tight">
+              Connexion
+            </h2>
+            <p className="mt-2 text-sm font-medium text-white/60">
+              Orientation{" "}
+              <span className="text-white font-bold">scolaire</span> &{" "}
+              <span className="text-white font-bold">professionnelle</span>
+            </p>
+          </div>
+
+          {/* Erreur générale */}
+          {errors.general && (
+            <div className="bg-red-500/15 border border-red-300/30 text-red-100 px-3 py-2 rounded-lg flex items-center text-xs mb-6 backdrop-blur-sm">
+              <svg
+                className="w-4 h-4 mr-2 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>{errors.general}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Champ Email / Nom d'utilisateur */}
+            <div className="relative group">
+              <input
+                type="text"
+                id="login_field"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                autoComplete="username"
+                className="block px-3 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border border-white/25 appearance-none focus:outline-none focus:ring-0 focus:border-white/60 peer placeholder:text-transparent"
+                placeholder=" "
+                required
+                disabled={loading}
+              />
+              <label
+                htmlFor="login_field"
+                className="absolute text-sm text-white/55 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+              >
+                Email ou Nom d'utilisateur
+              </label>
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg
+                  className="w-4 h-4 text-white/40 group-focus-within:text-white transition-colors duration-200"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
                   />
-                  <div className="hidden lg:block max-w-3xl">
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/65">
-                      Plateforme officielle
-                    </p>
-                    <p className="mt-1 text-xl font-black leading-tight text-white xl:text-2xl">
-                      Ministère de l&apos;Enseignement Supérieur et de la Recherche Scientifique
-                    </p>
-                  </div>
-                </div>
-                <h1 className="hidden max-w-2xl text-4xl font-black leading-tight text-white sm:text-5xl lg:block lg:text-6xl">
-                  Bienvenue sur votre espace d&apos;accès
-                </h1>
-              </div>
-
-              <div className="hidden max-w-2xl animate-fade-in-up lg:mt-16 lg:block">
-                <h2 className="text-2xl font-bold text-white sm:text-3xl">
-                  Orientation scolaire &amp; professionnelle
-                </h2>
-                <p className="mt-3 max-w-xl text-sm leading-7 text-white/75 sm:text-base">
-                  Une plateforme pensée pour accompagner les apprenants dans
-                  leurs choix académiques et professionnels avec des parcours
-                  clairs, modernes et accessibles.
-                </p>
+                </svg>
               </div>
             </div>
 
-            <div className="mx-auto flex w-full max-w-md animate-fade-in-up flex-col justify-center sm:max-w-xl lg:mx-0 lg:max-w-md lg:justify-self-end">
-              <div className="mb-5 px-2 text-center lg:hidden">
-                <img
-                  src={mesupresLogo}
-                  alt="Logo MESUPRES"
-                  className="mx-auto mb-3 h-20 w-auto object-contain sm:h-24"
-                />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-100/80 sm:text-sm">
-                  Bienvenue sur votre espace d&apos;accès
-                </p>
-                <h2 className="mx-auto mt-1 max-w-sm text-2xl font-bold leading-tight text-white sm:max-w-lg sm:text-3xl">
-                  Orientation scolaire &amp; professionnelle
-                </h2>
-              </div>
-
-              <div className="w-full rounded-[1.75rem] border border-white/15 bg-white/12 px-6 py-8 shadow-2xl shadow-black/40 backdrop-blur-xl sm:rounded-[2rem] sm:px-9 sm:py-10 lg:p-8">
-                <div className="mb-8 text-center sm:mb-9 lg:mb-6">
-                  <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                    Connexion
-                  </h2>
-                  <p className="mt-3 text-xs font-medium text-white/70 sm:mt-4 sm:text-sm lg:mt-2">
-                    Accédez à votre espace personnel
-                  </p>
-                </div>
-
-                {errors.general && (
-                  <div className="mb-4 flex items-center justify-center gap-2 rounded-xl border border-red-300/30 bg-red-500/15 px-3 py-2 text-center text-xs font-medium text-red-100 animate-shake">
-                    <svg
-                      className="h-4 w-4 flex-shrink-0"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {errors.general}
-                  </div>
-                )}
-
-                <form
-                  onSubmit={handleSubmit}
-                  className="space-y-6 sm:space-y-7 lg:space-y-5"
-                >
-                  <div className="relative group">
-                    <input
-                      type="text"
-                      id="identifier"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      className="block w-full appearance-none rounded-xl border border-white/20 bg-white/10 px-4 py-4 text-sm text-white backdrop-blur-md transition placeholder:text-white/60 focus:border-cyan-300/70 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-cyan-200/30 sm:rounded-2xl sm:px-5 sm:py-[1.125rem] sm:text-base lg:py-4"
-                      placeholder="E-mail ou nom d'utilisateur"
-                      required
-                    />
-                  </div>
-
-                  <div className="relative group">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full appearance-none rounded-xl border border-white/20 bg-white/10 px-4 py-4 text-sm text-white backdrop-blur-md transition placeholder:text-white/60 focus:border-cyan-300/70 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-cyan-200/30 sm:rounded-2xl sm:px-5 sm:py-[1.125rem] sm:text-base lg:py-4"
-                      placeholder="Mot de passe"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-white/55 transition hover:text-white focus:outline-none sm:pr-4"
-                      tabIndex="-1"
-                    >
-                      {showPassword ? (
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                          />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 pt-3 sm:gap-3 sm:pt-4 lg:pt-1">
-                    <label className="group flex min-w-0 cursor-pointer items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="h-4 w-4 rounded border-white/30 bg-white/10 text-cyan-400 focus:ring-cyan-300"
-                      />
-                      <span className="whitespace-nowrap text-xs text-white/75 transition-colors group-hover:text-white">
-                        Rester connecté
-                      </span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
-                      className="shrink-0 text-right text-xs font-semibold text-cyan-100 transition-colors hover:text-white"
-                    >
-                      Mot de passe oublié ?
-                    </button>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex w-full items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-cyan-950/40 transition duration-200 hover:from-cyan-400 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] sm:rounded-2xl sm:py-4 lg:py-3"
+            {/* Champ Mot de passe */}
+            <div className="relative group">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password_field"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="block px-3 pb-2.5 pt-4 w-full text-sm text-white bg-transparent rounded-lg border border-white/25 appearance-none focus:outline-none focus:ring-0 focus:border-white/60 peer placeholder:text-transparent"
+                placeholder=" "
+                required
+                disabled={loading}
+              />
+              <label
+                htmlFor="password_field"
+                className="absolute text-sm text-white/55 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-white peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+              >
+                Mot de passe
+              </label>
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white/70 focus:outline-none"
+                disabled={loading}
+              >
+                {showPassword ? (
+                  <svg
+                    className="w-4 h-4 group-focus-within:text-white transition-colors duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {loading ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        <span>Connexion en cours...</span>
-                      </>
-                    ) : (
-                      <span>Se connecter</span>
-                    )}
-                  </button>
-                </form>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-4 h-4 group-focus-within:text-white transition-colors duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
 
-                <div className="mt-9 border-t border-white/10 pt-5 text-center sm:mt-10 sm:pt-6 lg:mt-6 lg:pt-4">
-                  <p className="text-[10px] font-medium tracking-wide text-white/55 sm:text-[11px]">
-                    © 2026 MESUPRES - Tous droits réservés
-                  </p>
+            {/* Rester connecté + Mot de passe oublié */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="sr-only"
+                    disabled={loading}
+                  />
+                  <div
+                    className={`w-4 h-4 border-2 rounded transition duration-200 ${
+                      rememberMe
+                        ? "bg-[#75B82A] border-[#75B82A]"
+                        : "bg-white/10 border-white/30"
+                    }`}
+                  >
+                    {rememberMe && (
+                      <svg
+                        className="w-2.5 h-2.5 text-white mx-auto mt-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                  </div>
                 </div>
-              </div>
+                <span className="text-xs text-white/70 font-medium">
+                  Rester connecté
+                </span>
+              </label>
+
+              <button
+                type="button"
+                className="text-xs text-white/80 hover:text-white font-medium focus:outline-none underline underline-offset-2 decoration-white/30 hover:decoration-white/60 transition-colors"
+                disabled={loading}
+                onClick={triggerForgotPasswordToast}
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
+
+            {/* Bouton Se connecter */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#1250c8] hover:bg-[#1a3ea8] text-white p-3 rounded-lg transition duration-200 font-black shadow-lg hover:shadow-xl disabled:opacity-50 transform hover:scale-[1.02] active:scale-[0.98] text-sm tracking-wide"
+            >
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Connexion...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center space-x-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  <span>Se connecter</span>
+                </div>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-6 pt-4 border-t border-white/15">
+            <div className="text-center text-xs text-white/50">
+              <p>© 2026 MESUPRES — Tous droits réservés</p>
             </div>
           </div>
         </div>
-
-        <style>{`
-          @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
-
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-3px); }
-            40%, 80% { transform: translateX(3px); }
-          }
-          .animate-shake { animation: shake 0.3s ease-in-out; }
-        `}</style>
       </div>
     </>
   );

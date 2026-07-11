@@ -92,7 +92,7 @@ const InstallPWA = () => {
       {/* Contenu principal */}
       <div className="flex flex-row items-center gap-4 mb-3 pr-4">
         <div className="flex-shrink-0">
-          <img src="/pwa-192x192.png" alt="Logo" className="w-12 h-12 rounded-lg shadow-sm" />
+          <img src="/logo.png" alt="Logo" className="w-12 h-12 rounded-lg shadow-sm" />
         </div>
         <div>
           <h3 className="font-semibold text-gray-900 text-sm">Installer l'application</h3>
